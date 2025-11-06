@@ -33,7 +33,7 @@ class MyInterestsAdapter(
         holder.eventLocation.text = event.location
         Glide.with(holder.itemView.context)
             .load(event.imageUrl)
-            .placeholder(R.drawable.ic_launcher_background)
+            .placeholder(R.drawable.sebastian_unsplash)
             .into(holder.eventImage)
     }
 

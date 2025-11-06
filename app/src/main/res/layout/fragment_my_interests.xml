@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp">
+    android:padding="8dp"
+    tools:context=".MyInterests.MyInterestsFragment">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/myInterestsToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:backgroundTint="?attr/colorPrimary"
+        app:titleTextColor="?attr/colorOnPrimary"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:menu="@menu/my_interests_menu"
+        android:title="My Interests" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewInterests"
@@ -19,9 +31,11 @@
         android:id="@+id/emptyTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="This is My Interests (no items yet)"
         android:gravity="center"
-        android:textSize="16sp"
-        android:padding="16dp" />
+        android:padding="16dp"
+        android:text="No interests added yet."
+        android:visibility="gone"
+        android:textColor="?attr/colorOnBackground"
+        android:textSize="16sp" />
 
 </LinearLayout>
