@@ -5,11 +5,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.yourcompany.backstage.databinding.ItemHeaderWelcomeBinding
-import com.yourcompany.backstage.databinding.ItemRowChevronBinding
-import com.yourcompany.backstage.databinding.ItemRowSectionBinding
-import com.yourcompany.backstage.databinding.ItemRowSwitchBinding
-import com.yourcompany.backstage.databinding.ItemRowValueBinding
+import com.group_12.backstage_group_12.databinding.ItemHeaderWelcomeBinding
+import com.group_12.backstage_group_12.databinding.ItemRowChevronBinding
+import com.group_12.backstage_group_12.databinding.ItemRowSectionBinding
+import com.group_12.backstage_group_12.databinding.ItemRowSwitchBinding
+import com.group_12.backstage_group_12.databinding.ItemRowValueBinding
 
 private const val TYPE_HEADER = 0
 private const val TYPE_SECTION = 1
