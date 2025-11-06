@@ -47,10 +47,10 @@ class MessagesFrag : Fragment() {
     private fun getSampleMessages(): List<Message> {
         return listOf(
             Message("Anna", "Yay!", "09:31"),
-            Message("Lucy", "Cool! 👍 I'll take them with...", "06:55"),
-            Message("Izak", "I'll call her later! 💛", "Wed"),
+            Message("Lucy", "Cool!  I'll take them with...", "06:55"),
+            Message("John", "I'll call her later! ", "Wed"),
             Message("Maya", "How about Friday next week?", "Wed"),
-            Message("Jide", "It was awesome!!!!!", "Mon")
+            Message("Sean", "It was awesome!!!!!", "Mon")
         )
     }
 }
