@@ -9,9 +9,19 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewInterests"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipToPadding="false"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    <TextView
+        android:id="@+id/emptyTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="This is My Interests (no items yet)"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:padding="16dp" />
 
 </LinearLayout>

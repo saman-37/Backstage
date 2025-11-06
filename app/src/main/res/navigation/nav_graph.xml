@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/navigation_my_interests">
+
+<!--    <fragment-->
+<!--        android:id="@+id/navigation_explore"-->
+<!--        android:name="com.group_12.backstage_group_12.Explore.ExploreFragment"-->
+<!--        android:label="Explore" />-->
+
+    <fragment
+        android:id="@+id/navigation_my_interests"
+        android:name="com.group_12.backstage_group_12.MyInterests.MyInterestsFragment"
+        android:label="My Interests" />
+
+<!--    <fragment-->
+<!--        android:id="@+id/navigation_chat"-->
+<!--        android:name="com.group_12.backstage_group_12.Chat.ChatFragment"-->
+<!--        android:label="Chat" />-->
+
+<!--    <fragment-->
+<!--        android:id="@+id/navigation_my_account"-->
+<!--        android:name="com.group_12.backstage_group_12.MyAccount.MyAccountFragment"-->
+<!--        android:label="My Account" />-->
+
+</navigation>
