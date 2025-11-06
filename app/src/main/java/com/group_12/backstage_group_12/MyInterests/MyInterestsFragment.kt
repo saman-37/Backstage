@@ -8,9 +8,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.backstage.app.R
-import com.backstage.app.model.Event
 import com.google.firebase.auth.FirebaseAuth
+import com.group_12.backstage_group_12.R
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MyInterestsFragment : Fragment() {
