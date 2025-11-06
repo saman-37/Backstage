@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
-import com.yourcompany.backstage.databinding.FragmentMyAccountBinding
+import com.group_12.backstage_group_12.databinding.FragmentMyAccountBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
