@@ -12,11 +12,35 @@
         android:id="@+id/myInterestsToolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:backgroundTint="?attr/colorPrimary"
-        app:titleTextColor="?attr/colorOnPrimary"
-        app:navigationIcon="@drawable/ic_arrow_back"
+        android:background="@color/nav_ripple"
+        app:title="My Interests"
+        app:titleTextColor="@color/purple_grey_40"
+        app:titleCentered="false"
         app:menu="@menu/my_interests_menu"
-        android:title="My Interests" />
+        android:elevation="4dp" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:strokeColor="@color/purple_grey_40"
+        app:strokeWidth="1dp">
+
+        <EditText
+            android:id="@+id/searchBar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Search"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="@android:color/transparent"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="@color/purple_grey_40" />
+    </com.google.android.material.card.MaterialCardView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewInterests"
