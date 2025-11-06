@@ -11,6 +11,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
+        vectorDrawables.useSupportLibrary = true
         applicationId = "com.group_12.backstage_group_12"
         minSdk = 24
         targetSdk = 36
