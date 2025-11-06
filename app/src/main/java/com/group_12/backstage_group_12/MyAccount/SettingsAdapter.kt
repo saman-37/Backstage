@@ -1,4 +1,4 @@
-package com.yourcompany.backstage.myaccount
+package com.group_12.backstage_group_12.MyAccount
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
