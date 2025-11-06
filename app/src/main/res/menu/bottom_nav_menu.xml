@@ -16,9 +16,9 @@
 <!--        android:icon="@drawable/ic_chat"-->
 <!--        android:title="Chat" />-->
 
-<!--    <item-->
-<!--        android:id="@+id/navigation_my_account"-->
-<!--        android:icon="@drawable/ic_person"-->
-<!--        android:title="My Account" />-->
+    <item
+        android:id="@+id/navigation_my_account"
+        android:icon="@drawable/ic_person"
+        android:title="My Account" />
 
 </menu>

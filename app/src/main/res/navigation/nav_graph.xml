@@ -19,9 +19,9 @@
 <!--        android:name="com.group_12.backstage_group_12.Chat.ChatFragment"-->
 <!--        android:label="Chat" />-->
 
-<!--    <fragment-->
-<!--        android:id="@+id/navigation_my_account"-->
-<!--        android:name="com.group_12.backstage_group_12.MyAccount.MyAccountFragment"-->
-<!--        android:label="My Account" />-->
+    <fragment
+        android:id="@+id/navigation_my_account"
+        android:name="com.group_12.backstage_group_12.MyAccount.MyAccountFragment"
+        android:label="My Account" />
 
 </navigation>
