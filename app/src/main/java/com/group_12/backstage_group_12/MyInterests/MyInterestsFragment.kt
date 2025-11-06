@@ -30,11 +30,6 @@ class MyInterestsFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_my_interests, container, false)
 
-        val toolbar = view.findViewById<MaterialToolbar>(R.id.myInterestsToolbar)
-        toolbar.setNavigationOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
-
         recyclerView = view.findViewById(R.id.recyclerViewInterests)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = MyInterestsAdapter(eventList)

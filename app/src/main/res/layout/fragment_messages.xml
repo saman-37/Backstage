@@ -10,17 +10,20 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:padding="16dp">
+        android:background="@android:color/white">
 
         <TextView
-            android:id="@+id/headerTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/appTitle"
+            android:layout_width="match_parent"
+            android:layout_marginTop="24dp"
+            android:layout_height="40dp"
+            android:background="#B285FF"
+            android:fontFamily="sans-serif-medium"
             android:text="Messages"
-            android:textColor="#000000"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textColor="#FFFFFF"
+            android:textSize="30sp"
+            android:textStyle="bold|italic"
+            android:paddingLeft="20dp"/>
 
         <TextView
             android:layout_width="wrap_content"
