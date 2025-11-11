@@ -10,21 +10,26 @@
         android:orientation="vertical"
         android:background="#F5F5F5"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="40dp">
+        android:layout_height="match_parent">
 
 <!--        app name  bar-->
-        <TextView
-            android:id="@+id/appTitle"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="#B285FF"
-            android:fontFamily="sans-serif-medium"
-            android:text="Backstage"
-            android:textColor="#FFFFFF"
-            android:textSize="30sp"
-            android:textStyle="bold|italic"
-            android:paddingLeft="20dp"/>
+            android:layout_height="wrap_content"
+            android:background="@android:color/white">
+            <TextView
+                android:id="@+id/appTitle"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="24dp"
+                android:background="#B285FF"
+                android:fontFamily="sans-serif-medium"
+                android:text="Backstage"
+                android:textColor="#FFFFFF"
+                android:textSize="30sp"
+                android:textStyle="bold|italic"
+                android:paddingLeft="20dp"/>
+        </RelativeLayout>
         <!-- Search bar -->
         <!-- Concert Search Section -->
         <LinearLayout
@@ -57,8 +62,8 @@
                 android:paddingHorizontal="12dp">
 
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:src="@android:drawable/ic_menu_search"
                     app:tint="#7C4DFF" />
 
@@ -79,11 +84,10 @@
                     android:id="@+id/searchButton"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:background="@drawable/ic_explore"
-                    android:padding="6dp"
                     android:contentDescription="Search"
-                    android:src="@android:drawable/ic_menu_search"
-                    app:tint="#FFFFFF" />
+                    android:padding="6dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="#7C4DFF" />
             </LinearLayout>
         </LinearLayout>
 
