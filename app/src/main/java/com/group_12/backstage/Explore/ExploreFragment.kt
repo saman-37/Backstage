@@ -278,7 +278,7 @@ class ExploreFragment : Fragment() {
             "image" to event.imageUrl,
             "genre" to event.genre,
             "status" to status,
-//            "ticketUrl" to event.ticketUrl
+            //            "ticketUrl" to event.ticketUrl
         )
 
         dbRef.setValue(eventData)
