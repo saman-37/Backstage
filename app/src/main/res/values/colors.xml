@@ -40,5 +40,6 @@
     <color name="colorOnError">#FFFFFF</color>
     <color name="colorRipple">#19424C</color>      <!-- Subtle teal overlay -->
     <color name="colorOutline">#3A5059</color>     <!-- Soft blue-grey -->
+    <color name="colorText">#7C4DFF</color>
 
 </resources>

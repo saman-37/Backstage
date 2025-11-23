@@ -57,4 +57,11 @@
         <item name="android:textColor">@color/colorOnBackground</item>
 
     </style>
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.Backstage.Splash" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Just color, no logo drawable for the system window background -->
+        <item name="android:windowBackground">@color/deep_sea_blue</item>
+        <item name="android:statusBarColor">@color/deep_sea_blue</item>
+    </style>
 </resources>

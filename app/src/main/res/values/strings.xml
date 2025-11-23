@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Backstage_group_12</string>
+    <string name="app_name">Backstage</string>
     <string name="event_image_desc">Event image</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <!-- Strings used for fragments for navigation -->

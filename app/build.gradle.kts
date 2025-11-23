@@ -7,12 +7,12 @@ plugins {
 }
 
 android {
-    namespace = "com.group_12.backstage_group_12"
+    namespace = "com.group_12.backstage"
     compileSdk = 36
 
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
-        applicationId = "com.group_12.backstage_group_12"
+        applicationId = "com.group_12.backstage"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

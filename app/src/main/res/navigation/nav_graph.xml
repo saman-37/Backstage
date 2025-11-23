@@ -1,27 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/navigation_explore">
 
     <fragment
         android:id="@+id/navigation_explore"
-        android:name="com.group_12.backstage_group_12.Explore.ExploreFragment"
+        android:name="com.group_12.backstage.Explore.ExploreFragment"
         android:label="Explore" />
 
     <fragment
         android:id="@+id/navigation_my_interests"
-        android:name="com.group_12.backstage_group_12.MyInterests.MyInterestsFragment"
-        android:label="My Interests" />
+        android:name="com.group_12.backstage.MyInterests.MyInterestsFragment"
+        android:label="My Interests">
+        <action
+            android:id="@+id/action_myInterests_to_eventDetails"
+            app:destination="@id/eventDetailsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_chat"
-        android:name="com.group_12.backstage_group_12.Chat.MessagesFrag"
+        android:name="com.group_12.backstage.Chat.MessagesFrag"
         android:label="Chat" />
 
     <fragment
         android:id="@+id/navigation_my_account"
-        android:name="com.group_12.backstage_group_12.MyAccount.MyAccountFragment"
+        android:name="com.group_12.backstage.MyAccount.MyAccountFragment"
         android:label="My Account" />
+
+    <fragment
+        android:id="@+id/eventDetailsFragment"
+        android:name="com.group_12.backstage.MyInterests.EventDetailsFragment"
+        android:label="Event Details"
+        tools:layout="@layout/fragment_event_details">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="date"
+            app:argType="string" />
+        <argument
+            android:name="location"
+            app:argType="string" />
+        <argument
+            android:name="imageUrl"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="ticketUrl"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
 
 </navigation>

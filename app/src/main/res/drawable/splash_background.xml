@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background Color: Deep Sea Blue -->
+    <item android:drawable="@color/deep_sea_blue" />
+
+    <!-- Logo in the Center -->
+    <!-- Using android:drawable directly supports both PNGs and Adaptive Icons (XML) -->
+    <item
+        android:drawable="@mipmap/ic_launcher"
+        android:gravity="center" />
+</layer-list>

@@ -5,4 +5,10 @@
     <item name="android:statusBarColor">@android:color/transparent</item>
     <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
   </style>
+
+    <!-- Splash Screen Theme for API 23+ -->
+    <style name="Theme.Backstage.Splash" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">@color/deep_sea_blue</item>
+    </style>
 </resources>

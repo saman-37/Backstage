@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Backstage_group_12"
+rootProject.name = "Backstage"
 include(":app")
  

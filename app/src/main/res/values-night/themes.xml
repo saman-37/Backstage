@@ -4,4 +4,11 @@
     <!-- Customize your dark theme here. -->
     <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
   </style>
+
+    <!-- Splash Screen Theme for Dark Mode -->
+    <style name="Theme.Backstage.Splash" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Just color, no logo drawable for the system window background -->
+        <item name="android:windowBackground">@color/deep_sea_blue</item>
+        <item name="android:statusBarColor">@color/deep_sea_blue</item>
+    </style>
 </resources>
