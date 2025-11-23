@@ -37,63 +37,145 @@
         </RelativeLayout>
         <!-- Search bar -->
         <!-- Concert Search Section -->
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="12dp"
-            >
+            android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/searchLabel"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:letterSpacing="0.05"
-                android:text="SEARCH CONCERTS"
-                android:textAllCaps="true"
-                android:textColor="@color/sunset_gold"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="12dp">
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp">
-
-                <androidx.cardview.widget.CardView
+                <TextView
+                    android:id="@+id/searchLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    android:clickable="false"
-                    android:focusable="false">
+                    android:letterSpacing="0.05"
+                    android:text="SEARCH CONCERTS"
+                    android:textAllCaps="true"
+                    android:textColor="@color/sunset_gold"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-                    <androidx.appcompat.widget.SearchView
-                        android:id="@+id/searchBar"
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp">
+
+                    <androidx.cardview.widget.CardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:iconifiedByDefault="false"
-                        android:queryHint="Artist, Event or Venue"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
-                        android:clickable="true"
-                        android:background="@android:color/white"
-                        android:padding="8dp"
-                        android:layout_margin="4dp"
-                        app:queryBackground="@android:color/transparent"
-                        app:iconifiedByDefault="false" />
-                </androidx.cardview.widget.CardView>
-            </FrameLayout>
-        </LinearLayout>
+                        android:clickable="false"
+                        android:focusable="false"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="4dp">
+
+                        <androidx.appcompat.widget.SearchView
+                            android:id="@+id/searchBar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="4dp"
+                            android:background="@android:color/white"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:focusableInTouchMode="true"
+                            android:iconifiedByDefault="false"
+                            android:padding="8dp"
+                            android:queryHint="Artist, Event or Venue"
+                            app:iconifiedByDefault="false"
+                            app:queryBackground="@android:color/transparent" />
+                    </androidx.cardview.widget.CardView>
+                </FrameLayout>
+
+                <!--            chip group to filter out genres   -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/genreChipGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipAll"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:checked="true"
+                        android:text="All" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipPop"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:text="Pop" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipRock"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:text="Rock" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipHipHop"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:text="Hip-Hop" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipCountry"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:text="Country" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipJazz"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:text="Jazz" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipElectronic"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:text="Electronic" />
+                </com.google.android.material.chip.ChipGroup>
+
+                <Button
+                    android:id="@+id/btnFilterDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ic_calendar"
+                    android:text="Filter by Date" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerEvents"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="8dp" />
+
+
+            </LinearLayout>
+        </ScrollView>
 
 
         <!-- RecyclerView for events -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerEvents"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp"/>
+
         <TextView
             android:id="@+id/tvNoResults"
             android:text="No concerts found"

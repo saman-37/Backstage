@@ -53,8 +53,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.firebase.firestore.ktx)
-    implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.fragment.ktx)
@@ -71,9 +69,14 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
 
     //Firebase
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth.ktx)
-    implementation(libs.firebase.firestore.ktx)
+//    implementation(platform(libs.firebase.bom))
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation("com.google.firebase:firebase-analytics")
+//    implementation(libs.firebase.auth.ktx) //ktx is no longer supported
+    implementation("com.google.firebase:firebase-auth")
+    //implementation(libs.firebase.firestore.ktx)
+    implementation("com.google.firebase:firebase-firestore")
+    implementation ("com.google.firebase:firebase-database")
 
     //Glide in MyInterests
     implementation("com.github.bumptech.glide:glide:4.16.0")
