@@ -17,6 +17,7 @@ volley = "1.2.1"
 navigationFragmentKtxVersion = "2.9.6"
 navigationUiKtxVersion = "2.9.6"
 firebaseDatabaseKtx = "22.0.1"
+googleServices = "4.4.2"
 
 
 [libraries]
@@ -51,4 +52,4 @@ firebase-database-ktx = { group = "com.google.firebase", name = "firebase-databa
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

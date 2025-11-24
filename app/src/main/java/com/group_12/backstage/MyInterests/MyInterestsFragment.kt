@@ -2,6 +2,7 @@ package com.group_12.backstage.MyInterests
 
 import android.graphics.Canvas
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -195,24 +196,6 @@ class MyInterestsFragment : Fragment() {
     private fun permanentlyDeleteEvent(event: Event) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
-             // Use ID if available, otherwise try title (less safe)
-             val query: Query = if (event.id.isNotEmpty()) {
-                 db.collection("users")
-                    .document(currentUser.uid)
-                    .collection("my_events")
-                    .whereEqualTo(android.provider.BaseColumns._ID, event.id) 
-                    // Instead, let's assume we captured the doc ID into event.id
-                    db.collection("users")
-                        .document(currentUser.uid)
-                        .collection("my_events")
-             } else {
-                 // Fallback to title
-                  db.collection("users")
-                    .document(currentUser.uid)
-                    .collection("my_events")
-                    .whereEqualTo("title", event.title)
-             }
-             
              if (event.id.isNotEmpty()) {
                  db.collection("users")
                     .document(currentUser.uid)
@@ -223,8 +206,12 @@ class MyInterestsFragment : Fragment() {
                          Toast.makeText(context, "Failed to delete from server: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
              } else {
-                 // Deleting by title (legacy/fallback)
-                 query.whereEqualTo("title", event.title).get()
+                 // Fallback to title
+                  db.collection("users")
+                    .document(currentUser.uid)
+                    .collection("my_events")
+                    .whereEqualTo("title", event.title)
+                    .get()
                     .addOnSuccessListener { documents ->
                         for (document in documents) {
                             document.reference.delete()
@@ -232,7 +219,6 @@ class MyInterestsFragment : Fragment() {
                     }
              }
         }
-        // If dummy data, do nothing (it's already gone from memory)
     }
 
     private fun setupSearch() {
@@ -279,41 +265,53 @@ class MyInterestsFragment : Fragment() {
     }
 
     private fun listenForUserEvents() {
-        progressBar.visibility = View.VISIBLE // Show loading
+        progressBar.visibility = View.VISIBLE 
         
         val currentUser = auth.currentUser
         if (currentUser == null) {
-            // Toast.makeText(context, "Please log in to see your interests", Toast.LENGTH_SHORT).show()
-            // Temporary: Load dummy data if not signed in
+            Log.d("MyInterests", "No user logged in. Loading dummy data.")
             loadDummyData()
             return
         }
 
-        // Assuming events are stored under users/{uid}/my_events
-        // You might need to adjust the collection path based on your actual Firestore structure
+        Log.d("MyInterests", "Fetching events for User UID: ${currentUser.uid}")
+        Toast.makeText(context, "Checking DB for User: ${currentUser.uid.take(5)}...", Toast.LENGTH_SHORT).show()
+
         db.collection("users")
             .document(currentUser.uid)
             .collection("my_events")
-            .orderBy("title", Query.Direction.ASCENDING) // Optional: Default sort
             .addSnapshotListener { snapshots, e ->
-                progressBar.visibility = View.GONE // Hide loading
+                progressBar.visibility = View.GONE 
                 
                 if (e != null) {
-                    Toast.makeText(context, "Error loading events: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("MyInterests", "Listen failed.", e)
+                    Toast.makeText(context, "Error loading events: ${e.message}", Toast.LENGTH_LONG).show()
                     return@addSnapshotListener
                 }
 
                 if (snapshots != null) {
+                    Log.d("MyInterests", "Snapshot received! Count: ${snapshots.size()}")
+                    if (snapshots.isEmpty) {
+                         Log.d("MyInterests", "Snapshot is empty.")
+                         // Toast.makeText(context, "No events found in DB", Toast.LENGTH_SHORT).show()
+                    }
+
                     eventList.clear()
                     for (doc in snapshots) {
-                        // Convert object and copy the document ID
-                        val event = doc.toObject(Event::class.java).copy(id = doc.id)
-                        eventList.add(event)
+                        try {
+                            val event = doc.toObject(Event::class.java).copy(id = doc.id)
+                            Log.d("MyInterests", "Loaded event: ${event.title}")
+                            eventList.add(event)
+                        } catch (e: Exception) {
+                            Log.e("MyInterests", "Error parsing document: ${doc.id}", e)
+                        }
                     }
                     
-                    // Re-apply filter if search text exists
+                    // Re-apply filter
                     val currentQuery = searchView.query.toString().trim().lowercase()
                     filterList(currentQuery)
+                } else {
+                    Log.d("MyInterests", "Current data: null")
                 }
             }
     }
@@ -327,7 +325,6 @@ class MyInterestsFragment : Fragment() {
             location = "BC Place, Vancouver",
             imageUrl = "https://s1.ticketm.net/dam/a/263/e3ae5095-f7c0-4b21-9f23-106040627263_1830261_TABLET_LANDSCAPE_LARGE_16_9.jpg",
             status = "going",
-            // Specific event link for Vancouver
             ticketUrl = "https://www.ticketmaster.ca/event/11005F6EC6B54372"
         ))
         eventList.add(Event(
@@ -337,7 +334,6 @@ class MyInterestsFragment : Fragment() {
             location = "Rogers Arena",
             imageUrl = "",
             status = "interested",
-            // Search link for Coldplay at Rogers Arena
             ticketUrl = "https://www.ticketmaster.com/search?q=Coldplay+Rogers+Arena"
         ))
         eventList.add(Event(
@@ -347,14 +343,10 @@ class MyInterestsFragment : Fragment() {
             location = "BC Place",
             imageUrl = "",
             status = "interested",
-            // Search link for Ed Sheeran at BC Place
             ticketUrl = "https://www.ticketmaster.com/search?q=Ed+Sheeran+BC+Place"
         ))
         
         filterList(searchView.query.toString())
-        // Toast.makeText(context, "Loaded dummy data (Not signed in)", Toast.LENGTH_SHORT).show()
-        
-        // Simulate loading delay for dummy data to show progress bar effect
         progressBar.visibility = View.GONE
     }
 
