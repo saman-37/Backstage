@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.auth.FirebaseAuth
+import com.group_12.backstage.Authentication.LoginActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -12,14 +14,18 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // Use coroutines for the delay
         lifecycleScope.launch {
             delay(2000) // 2 seconds delay
-            
-            // Start Main Activity
-            val intent = Intent(this@SplashActivity, MainActivity::class.java)
+
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val intent = if (currentUser != null) {
+                Intent(this@SplashActivity, MainActivity::class.java)
+            } else {
+                Intent(this@SplashActivity, LoginActivity::class.java)
+            }
+
             startActivity(intent)
-            finish() // Close SplashActivity so back button doesn't return to it
+            finish() // Close SplashActivity
         }
     }
 }

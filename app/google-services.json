@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "668860542919",
+    "firebase_url": "https://backstage-d4057-default-rtdb.firebaseio.com",
     "project_id": "backstage-d4057",
     "storage_bucket": "backstage-d4057.firebasestorage.app"
   },
@@ -10,25 +11,6 @@
         "mobilesdk_app_id": "1:668860542919:android:d9a2f54fe39ddbd0d673e2",
         "android_client_info": {
           "package_name": "com.group_12.backstage"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCpPrcQQU_RcTPH9rnCRRFyhV-igbEbLxc"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:668860542919:android:1e222d1fc6a92216d673e2",
-        "android_client_info": {
-          "package_name": "com.group_12.backstage_group_12.MyAccount"
         }
       },
       "oauth_client": [],
