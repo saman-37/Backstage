@@ -3,9 +3,11 @@ package com.group_12.backstage.MyAccount
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.group_12.backstage.R
 import com.group_12.backstage.databinding.ItemHeaderWelcomeBinding
 import com.group_12.backstage.databinding.ItemRowChevronBinding
 import com.group_12.backstage.databinding.ItemRowSectionBinding
@@ -79,6 +81,18 @@ class SettingsAdapter(
         fun bind(item: SettingsItem.Chevron, nav: MyAccountNavigator) {
             b.icon.setImageResource(item.icon)
             b.title.text = item.title
+            
+            // Change color for Sign Out
+            if (item.id == "sign_out") {
+                val redColor = ContextCompat.getColor(b.root.context, R.color.colorError)
+                b.title.setTextColor(redColor)
+                b.icon.setColorFilter(redColor)
+            } else {
+                val defaultColor = ContextCompat.getColor(b.root.context, R.color.colorOnBackground)
+                b.title.setTextColor(defaultColor)
+                b.icon.clearColorFilter()
+            }
+
             b.root.setOnClickListener { 
                 if (item.id == "sign_out") {
                     nav.onSignOutClicked()

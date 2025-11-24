@@ -1,10 +1,11 @@
 package com.group_12.backstage
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.firebase.FirebaseApp
@@ -20,14 +21,16 @@ class MainActivity : AppCompatActivity() {
         setTheme(R.style.Theme_Backstage_group_12)
         
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        
+        // Force White Status Bar with Dark Icons Programmatically
+        // This ensures the status bar is white regardless of theme defaults
+        window.statusBarColor = Color.WHITE
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
+
         FirebaseApp.initializeApp(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        window.statusBarColor = ContextCompat.getColor(this, R.color.tropical_teal)
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.tropical_teal)
 
         val navController = findNavController(R.id.nav_host_fragment)
         binding.bottomNavigationView.setupWithNavController(navController)

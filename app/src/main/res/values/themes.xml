@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Backstage_group_12" parent="android:Theme.Material.Light.NoActionBar" />
-  <!-- Base application theme. -->
+    <!-- Main Theme linking to Base -->
+    <style name="Theme.Backstage_group_12" parent="Base.Theme.Backstage_group_12" />
+
+    <!-- Base application theme. -->
     <style name="Base.Theme.Backstage_group_12" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- Primary -->
