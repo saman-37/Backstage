@@ -41,6 +41,7 @@ class ChatFragment : Fragment() {
         return view
     }
 
+
     private fun setupRecyclerView() {
         adapter = UserAdapter(userList) { user ->
             // Open DirectMessageActivity with the selected user
@@ -56,21 +57,27 @@ class ChatFragment : Fragment() {
     private fun fetchUsers() {
         db.collection("users").get()
             .addOnSuccessListener { documents ->
-                userList.clear()
+                val newList = mutableListOf<User>()
                 val currentUserId = auth.currentUser?.uid
+
                 for (doc in documents) {
                     val user = doc.toObject(User::class.java)
-                    // Exclude current user from the list
-                    if (user.uid != currentUserId) {
-                        userList.add(user)
-                    }
+                    if (user.uid != currentUserId) newList.add(user)
                 }
-                adapter.notifyDataSetChanged()
-            }
-            .addOnFailureListener { exception ->
-                Log.e("ChatFragment", "Error getting users", exception)
+
+                userList = newList
+                adapter.updateList(userList)
             }
     }
+
+
+
+    override fun onResume() {
+        super.onResume()
+        fetchUsers()  // Reload user list every time you come back to this tab
+    }
+
+
 
     private fun setupSearch() {
         searchEditText.addTextChangedListener(object : TextWatcher {

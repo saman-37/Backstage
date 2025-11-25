@@ -5,19 +5,33 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/senderTextView"
+    <!-- Message bubble -->
+    <LinearLayout
+        android:id="@+id/messageBubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:text="Sender" />
+        android:padding="12dp"
+        android:background="@drawable/chat_bubble"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/messageTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Message content"
-        android:textColor="@android:color/white" />
+        <TextView
+            android:id="@+id/senderTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:alpha="0.8"
+            android:text="Sender" />
+
+        <TextView
+            android:id="@+id/messageTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Message content"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
 
 </LinearLayout>

@@ -1,9 +1,10 @@
 package com.group_12.backstage.Chat
 
 import android.os.Bundle
-import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -19,7 +20,7 @@ class DirectMessageActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: MessageAdapter
     private lateinit var messageEditText: EditText
-    private lateinit var sendButton: Button
+    private lateinit var sendButton: ImageButton
     private lateinit var emptyChatTextView: TextView
     private val messages = mutableListOf<Message>()
 
@@ -46,6 +47,7 @@ class DirectMessageActivity : AppCompatActivity() {
         sendButton = findViewById(R.id.sendButton)
         emptyChatTextView = findViewById(R.id.emptyChatTextView)
 
+
         setupRecyclerView()
         setupChatId()
         setupSendButton()
@@ -53,11 +55,9 @@ class DirectMessageActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = MessageAdapter(messages) { 
-            // Optional click handler
-        }
+        adapter = MessageAdapter(messages) {}
         val layoutManager = LinearLayoutManager(this)
-        layoutManager.stackFromEnd = true // Start from bottom
+        layoutManager.stackFromEnd = true
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
     }
@@ -65,8 +65,6 @@ class DirectMessageActivity : AppCompatActivity() {
     private fun setupChatId() {
         val currentUserId = auth.currentUser?.uid
         if (currentUserId != null && targetUserId != null) {
-            // Create a unique chat ID by sorting UIDs alphabetically
-            // This ensures userA talking to userB has the same ID as userB talking to userA
             val userList = listOf(currentUserId, targetUserId!!).sorted()
             chatId = "chat_${userList[0]}_${userList[1]}"
         }
@@ -92,7 +90,7 @@ class DirectMessageActivity : AppCompatActivity() {
             "text" to message,
             "timestamp" to System.currentTimeMillis()
         )
-        
+
         db.collection("chats")
             .document(chatId!!)
             .collection("messages")
@@ -110,9 +108,7 @@ class DirectMessageActivity : AppCompatActivity() {
             .collection("messages")
             .orderBy("timestamp")
             .addSnapshotListener { snapshots, e ->
-                if (e != null) {
-                    return@addSnapshotListener
-                }
+                if (e != null) return@addSnapshotListener
 
                 if (snapshots != null) {
                     messages.clear()
@@ -123,8 +119,7 @@ class DirectMessageActivity : AppCompatActivity() {
                     }
 
                     adapter.notifyDataSetChanged()
-                    
-                    // Toggle empty view
+
                     if (messages.isEmpty()) {
                         emptyChatTextView.isVisible = true
                         recyclerView.isVisible = false
