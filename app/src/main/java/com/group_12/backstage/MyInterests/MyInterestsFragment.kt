@@ -8,14 +8,20 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.location.Geocoder
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -37,6 +43,9 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointForward
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -45,7 +54,11 @@ import com.group_12.backstage.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 class MyInterestsFragment : Fragment(), OnMapReadyCallback {
 
@@ -58,6 +71,9 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
     private lateinit var mapView: MapView
     private lateinit var btnMapToggle: FloatingActionButton
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var btnHistory: ImageButton
+    private lateinit var btnLocationFilter: ImageButton
+    private lateinit var btnDateFilter: ImageButton
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -67,6 +83,9 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
 
     private var googleMap: GoogleMap? = null
     private var isMapView = false
+    private var locationFilter: String = "" // Stores the active location filter
+    private var startDateFilter: Date? = null
+    private var endDateFilter: Date? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -76,6 +95,11 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
 
         if (savedInstanceState != null) {
             isMapView = savedInstanceState.getBoolean("isMapView", false)
+            locationFilter = savedInstanceState.getString("locationFilter", "")
+            val startMillis = savedInstanceState.getLong("startMillis", -1)
+            val endMillis = savedInstanceState.getLong("endMillis", -1)
+            if (startMillis != -1L) startDateFilter = Date(startMillis)
+            if (endMillis != -1L) endDateFilter = Date(endMillis)
         }
 
         recyclerView = view.findViewById(R.id.recyclerViewInterests)
@@ -86,6 +110,9 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
         mapView = view.findViewById(R.id.mapView)
         btnMapToggle = view.findViewById(R.id.btnMapToggle)
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
+        btnHistory = view.findViewById(R.id.btnHistory)
+        btnLocationFilter = view.findViewById(R.id.btnLocationFilter)
+        btnDateFilter = view.findViewById(R.id.btnDateFilter)
 
         // Initialize MapView
         mapView.onCreate(savedInstanceState)
@@ -104,6 +131,21 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
         )
         recyclerView.adapter = adapter
 
+        btnHistory.setOnClickListener {
+            findNavController().navigate(R.id.action_myInterests_to_history)
+        }
+
+        btnLocationFilter.setOnClickListener {
+            showLocationFilterDialog()
+        }
+
+        btnDateFilter.setOnClickListener {
+            showDateFilterDialog()
+        }
+
+        // Update UI for active filters
+        updateFilterIcons()
+
         setupSearch()
         setupFilterChips()
         setupSwipeToDelete()
@@ -120,7 +162,127 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("isMapView", isMapView)
+        outState.putString("locationFilter", locationFilter)
+        if (startDateFilter != null) outState.putLong("startMillis", startDateFilter!!.time)
+        if (endDateFilter != null) outState.putLong("endMillis", endDateFilter!!.time)
         mapView.onSaveInstanceState(outState)
+    }
+
+    private fun showDateFilterDialog() {
+        // If there is already a filter, show option to clear it
+        if (startDateFilter != null) {
+             AlertDialog.Builder(requireContext())
+                .setTitle("Date Filter")
+                .setMessage("Current filter: ${SimpleDateFormat("MMM dd", Locale.US).format(startDateFilter!!)} - ${SimpleDateFormat("MMM dd", Locale.US).format(endDateFilter!!)}")
+                .setPositiveButton("Change") { _, _ -> openDatePicker() }
+                .setNeutralButton("Clear Filter") { _, _ ->
+                    startDateFilter = null
+                    endDateFilter = null
+                    updateFilterIcons()
+                    filterList(searchView.query.toString())
+                    Toast.makeText(context, "Date filter cleared", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        } else {
+            openDatePicker()
+        }
+    }
+
+    private fun openDatePicker() {
+        // Configure constraints to disable past dates
+        val constraintsBuilder = CalendarConstraints.Builder()
+            .setValidator(DateValidatorPointForward.now())
+
+        val builder = MaterialDatePicker.Builder.dateRangePicker()
+            .setTitleText("Select Date Range")
+            .setTheme(R.style.Theme_Backstage_DatePicker)
+            .setCalendarConstraints(constraintsBuilder.build())
+
+        // Pre-select current filter or Today
+        if (startDateFilter != null && endDateFilter != null) {
+            builder.setSelection(androidx.core.util.Pair(startDateFilter!!.time, endDateFilter!!.time))
+        } else {
+            val today = MaterialDatePicker.todayInUtcMilliseconds()
+            // Select Today as start, leaving End null. 
+            // This allows the user to click a future date to complete the range without resetting start.
+            builder.setSelection(androidx.core.util.Pair(today, null))
+        }
+
+        val dateRangePicker = builder.build()
+
+        dateRangePicker.show(parentFragmentManager, "datePicker")
+        dateRangePicker.addOnPositiveButtonClickListener { selection ->
+            val startMillis = selection.first
+            val endMillis = selection.second ?: selection.first
+
+            startDateFilter = Date(startMillis)
+            
+            // End date: Add 24 hours (minus 1ms) to insure full coverage of the end day
+            val cal = Calendar.getInstance()
+            cal.timeInMillis = endMillis
+            cal.add(Calendar.DAY_OF_MONTH, 1)
+            cal.add(Calendar.MILLISECOND, -1)
+            endDateFilter = cal.time
+
+            updateFilterIcons()
+            filterList(searchView.query.toString())
+            
+            val fmt = SimpleDateFormat("MMM dd", Locale.US)
+            Toast.makeText(context, "Filtered: ${fmt.format(startDateFilter!!)} - ${fmt.format(endDateFilter!!)}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateFilterIcons() {
+        if (locationFilter.isNotEmpty()) {
+            btnLocationFilter.setColorFilter(Color.parseColor("#00CED1"))
+        } else {
+            btnLocationFilter.clearColorFilter()
+            btnLocationFilter.setColorFilter(Color.parseColor("#757575"))
+        }
+
+        if (startDateFilter != null) {
+            btnDateFilter.setColorFilter(Color.parseColor("#00CED1"))
+        } else {
+            btnDateFilter.clearColorFilter()
+            btnDateFilter.setColorFilter(Color.parseColor("#757575"))
+        }
+    }
+
+    private fun showLocationFilterDialog() {
+        // Use AutoCompleteTextView for suggestions
+        val input = AutoCompleteTextView(requireContext())
+        input.hint = "Enter City (e.g. Vancouver)"
+        input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+        input.setText(locationFilter) // Pre-fill with current filter
+
+        // Suggestion List
+        val cities = arrayOf(
+            "Vancouver", "Toronto", "Montreal", "Calgary", "Edmonton", "Ottawa", "Winnipeg", "Quebec City", "Halifax", "Victoria",
+            "Saskatoon", "Regina", "St. John's", "Kelowna", "Hamilton", "London", "Kitchener", "Windsor", "Oshawa",
+            "New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose"
+        )
+        
+        // Use custom layout for dropdown items
+        val adapter = ArrayAdapter(requireContext(), R.layout.item_autocomplete_city, cities)
+        input.setAdapter(adapter)
+        input.threshold = 1 // Start suggesting from 1 character
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Filter by Location")
+            .setView(input)
+            .setPositiveButton("Apply") { _, _ ->
+                locationFilter = input.text.toString().trim()
+                updateFilterIcons()
+                filterList(searchView.query.toString())
+            }
+            .setNeutralButton("Clear") { _, _ ->
+                locationFilter = ""
+                updateFilterIcons()
+                filterList(searchView.query.toString())
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun setupSwipeRefresh() {
@@ -459,14 +621,34 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
             it.date.lowercase().contains(query)
         }
 
-        val finalFiltered = if (filterStatus == "all") searchFiltered else searchFiltered.filter { 
+        // Apply Location Filter
+        val locationFiltered = if (locationFilter.isEmpty()) searchFiltered else searchFiltered.filter {
+            it.location.lowercase().contains(locationFilter.lowercase())
+        }
+
+        // Apply Date Filter
+        val dateFiltered = if (startDateFilter == null || endDateFilter == null) locationFiltered else locationFiltered.filter {
+             try {
+                 val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+                 val eventDate = dateFormat.parse(it.date)
+                 if (eventDate != null) {
+                     // Check if event date is within start and end (inclusive)
+                     !eventDate.before(startDateFilter) && !eventDate.after(endDateFilter)
+                 } else {
+                     false
+                 }
+             } catch (e: Exception) {
+                 false
+             }
+        }
+
+        val finalFiltered = if (filterStatus == "all") dateFiltered else dateFiltered.filter { 
             it.status.equals(filterStatus, ignoreCase = true) 
         }
 
         filteredList.addAll(finalFiltered)
         adapter.notifyDataSetChanged()
         
-        // Ensure the correct view (empty text) shows up only if we are NOT in map view
         if (!isMapView) {
             emptyTextView.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
         }
@@ -495,10 +677,39 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
 
                 if (snapshots != null) {
                     eventList.clear()
+                    val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+                    
+                    // Normalize today to midnight (start of day)
+                    val calendar = Calendar.getInstance()
+                    calendar.set(Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(Calendar.MINUTE, 0)
+                    calendar.set(Calendar.SECOND, 0)
+                    calendar.set(Calendar.MILLISECOND, 0)
+                    val today = calendar.time
+                    
                     for (doc in snapshots) {
                         try {
                             val event = doc.toObject(Event::class.java).copy(id = doc.id)
-                            eventList.add(event)
+                            
+                            // Filter OUT past events
+                            if (event.date.isNotEmpty()) {
+                                try {
+                                    val eventDate = dateFormat.parse(event.date)
+                                    if (eventDate != null && !eventDate.before(today)) {
+                                        // It's today or future
+                                        eventList.add(event)
+                                    } else if (eventDate == null) {
+                                        // Keep events with unparseable dates to be safe
+                                        eventList.add(event)
+                                    }
+                                } catch (parseEx: Exception) {
+                                    // Fallback: if parsing fails, show event
+                                    eventList.add(event)
+                                }
+                            } else {
+                                eventList.add(event)
+                            }
+
                         } catch (e: Exception) {
                             Log.e("MyInterests", "Parse error", e)
                         }
