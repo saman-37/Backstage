@@ -121,7 +121,8 @@ class DirectMessageActivity : AppCompatActivity() {
                         val sender = doc.getString("senderId") ?: ""
                         val text = doc.getString("text") ?: ""
                         val isSent = sender == currentUserEmail
-                        messages.add(Message(sender, text, isSentByCurrentUser = isSent))
+                        val timestamp = doc.getLong("timestamp") ?: 0L
+                        messages.add(Message(sender, text, timestamp,isSentByCurrentUser = isSent))
                     }
                     adapter.notifyDataSetChanged()
                     if (messages.isEmpty()) {
