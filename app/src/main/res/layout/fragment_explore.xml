@@ -195,10 +195,9 @@
                 android:drawableLeft="@drawable/ic_calendar"
                 android:text="Filter by Date" />
 
+
         </LinearLayout>
     </ScrollView>
-
-    <!-- Content Area (no changes here) -->
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -209,20 +208,20 @@
             android:id="@+id/recyclerEvents"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="8dp"
-            android:clipToPadding="false" />
+            android:clipToPadding="false"
+            android:padding="8dp" />
 
         <TextView
             android:id="@+id/tvNoResults"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="No concerts found for this selection."
-            android:textSize="18sp"
-            android:gravity="center"
-            android:visibility="gone"
             android:layout_gravity="center"
+            android:gravity="center"
             android:padding="16dp"
-            android:textColor="@color/tropical_teal"/>
+            android:text="No concerts found for this selection."
+            android:textColor="@color/tropical_teal"
+            android:textSize="18sp"
+            android:visibility="gone" />
     </FrameLayout>
 
 </LinearLayout>
