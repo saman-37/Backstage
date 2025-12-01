@@ -11,8 +11,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
         <item name="colorOnPrimary">@color/colorOnPrimary</item>
-<!--        <item name="colorPrimaryContainer">@color/sunset_gold</item>-->
-<!--        <item name="colorOnPrimaryContainer">@color/tropical_teal</item>-->
+        <!--        <item name="colorPrimaryContainer">@color/sunset_gold</item>-->
+        <!--        <item name="colorOnPrimaryContainer">@color/tropical_teal</item>-->
 
 
 
@@ -28,12 +28,12 @@
 
         <!-- Tertiary -->
         <item name="colorTertiary">@color/colorTertiary</item>
-<!--        <item name="colorTertiaryVariant">@color/colorTertiaryVariant</item>-->
+        <!--        <item name="colorTertiaryVariant">@color/colorTertiaryVariant</item>-->
         <item name="colorOnTertiary">@color/colorOnTertiary</item>
 
         <!-- Background + Surface -->
         <item name="android:windowBackground">@color/colorBackground</item>
-<!--        <item name="colorBackground">@color/colorBackground</item>-->
+        <!--        <item name="colorBackground">@color/colorBackground</item>-->
         <item name="colorOnBackground">@color/dark_blue</item>
 
         <item name="colorSurface">@color/deep_sea_blue</item>
@@ -53,8 +53,8 @@
         <item name="android:statusBarColor">@android:color/white</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">@color/colorBackground</item>
-<!--        <item name="android:statusBarContrastEnforced">false</item>-->
-<!--        <item name="android:navigationBarContrastEnforced">false</item>-->
+        <!--        <item name="android:statusBarContrastEnforced">false</item>-->
+        <!--        <item name="android:navigationBarContrastEnforced">false</item>-->
 
         <!-- Typography (optional) -->
         <item name="android:textColor">@color/colorOnBackground</item>
@@ -72,7 +72,7 @@
     <style name="Theme.Backstage.DatePicker" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
         <item name="materialCalendarStyle">@style/Widget.MaterialComponents.MaterialCalendar</item>
         <item name="materialCalendarHeaderLayout">@style/Widget.MaterialComponents.MaterialCalendar.HeaderLayout</item>
-        
+
         <!-- Colors -->
         <item name="colorPrimary">@color/tropical_teal</item>
         <item name="colorOnPrimary">@android:color/white</item>

@@ -87,7 +87,7 @@ class ChatFragment : Fragment() {
 
     private fun filter(text: String) {
         val filteredList = userList.filter {
-            it.name.contains(text, true) || it.username.contains(text, true)
+            it.name.contains(text, true)
         }
         adapter.updateList(filteredList)
     }

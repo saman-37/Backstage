@@ -11,6 +11,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.group_12.backstage.R
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import com.group_12.backstage.MyAccount.LocationHelper
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -81,14 +85,17 @@ class RegisterActivity : AppCompatActivity() {
                             "bio" to "",
                             //4 additional fields from MyAccount
                             "receiveNotifications" to false,          // default
-                            "myLocation" to "",                       // default empty
-                            "myCountry" to "",                        // default empty
+                            //TODO fill via location
+                            "city" to "",
+                            "state" to "",
+                            "country" to "",
                             "locationBasedContent" to false           // default
                         )
                         db.collection("users").document(uid).set(userMap)
                             .addOnFailureListener {
-                                // Optional: log the error, but user is already navigated
-                                it.printStackTrace()
+                                // One-time location set at account creation
+                                ensureLocationAndUpdate(uid)
+                                it.printStackTrace()  // Optional: log the error, but user is already navigated
                             }
 
                     } else {
@@ -101,6 +108,45 @@ class RegisterActivity : AppCompatActivity() {
         loginLink.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
+        }
+    }
+
+    private val locationPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { result ->
+            val granted = result[android.Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                    result[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+            if (granted) {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@registerForActivityResult
+                LocationHelper.updateUserLocationIfPossible(this, uid, uid)
+            }
+        }
+
+    //for one-time location that we save to save in our database
+    private fun ensureLocationAndUpdate(uid: String) {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (fineGranted || coarseGranted) {
+            // Already allowed → just do one-time update
+            LocationHelper.updateUserLocationIfPossible(this, uid, uid)
+        } else {
+            // Ask ONCE at first registration or first login
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
         }
     }
 }

@@ -10,6 +10,10 @@ import android.widget.Toast
 import android.content.Intent
 import android.widget.TextView
 import com.group_12.backstage.MainActivity
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import com.group_12.backstage.MyAccount.LocationHelper
 
 class LoginActivity : AppCompatActivity() {
 
@@ -37,6 +41,9 @@ class LoginActivity : AppCompatActivity() {
 
             auth.signInWithEmailAndPassword(emailText, passText)
                 .addOnSuccessListener {
+                    val uid = auth.currentUser!!.uid
+                    // One-time location refresh on fresh login
+                    ensureLocationAndUpdate(uid)
                     Toast.makeText(this, "Logged in!", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
@@ -52,4 +59,44 @@ class LoginActivity : AppCompatActivity() {
         }
 
     }
+
+    private val locationPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { result ->
+            val granted = result[android.Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                    result[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+            if (granted) {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@registerForActivityResult
+                LocationHelper.updateUserLocationIfPossible(this, uid, uid)
+            }
+        }
+
+    //for one-time location that we save to save in our database
+    private fun ensureLocationAndUpdate(uid: String) {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (fineGranted || coarseGranted) {
+            // Already allowed → just do one-time update
+            LocationHelper.updateUserLocationIfPossible(this, uid, uid)
+        } else {
+            // Ask ONCE at first registration or first login
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
 }

@@ -1,8 +1,7 @@
 package com.group_12.backstage.MyAccount
 
-import android.content.Context
 import android.net.Uri
-import androidx.core.content.FileProvider
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
@@ -10,9 +9,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.group_12.backstage.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.io.File
 
-class MyAccountViewModel : ViewModel() {
+class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
@@ -29,7 +27,8 @@ class MyAccountViewModel : ViewModel() {
             _items.value = listOf(
                 SettingsItem.Header(
                     welcomeBrand = "Backstage",
-                    showSignIn = true
+                    showSignIn = true,
+                    profileImageUrl = null
                 )
             )
         } else {
@@ -43,15 +42,13 @@ class MyAccountViewModel : ViewModel() {
                 val firebaseUser = auth.currentUser
                 val displayName = firebaseUser?.displayName?.takeIf { it.isNotBlank() }
                 val greetingName = displayName ?: firebaseUser?.email ?: "User"
-                val profileImageUrl = firebaseUser?.photoUrl?.toString()
+                val profileImageUrl = snapshot?.getString("profileImageUrl")?.takeIf { it.isNotBlank() }
 
                 val receiveNotifications =
                     snapshot?.getBoolean("receiveNotifications") ?: false
-                //TODO: we want below information to be retrieved from user's current location, if they give access
-                val myLocation =
-                    snapshot?.getString("myLocation") ?: "Vancouver, BC"
-                val myCountry =
-                    snapshot?.getString("myCountry") ?: "Canada"
+                val city = snapshot?.getString("city") ?: ""
+                val state = snapshot?.getString("state") ?: ""
+                val country = snapshot?.getString("country") ?: ""
 
                 val locationContent =
                     snapshot?.getBoolean("locationBasedContent") ?: false
@@ -78,7 +75,7 @@ class MyAccountViewModel : ViewModel() {
                         )
                     )
 
-                    // Location toggle button (cityAndState and country are the fields that we will extract from user's current location and save in db)
+                    // Location toggle button (city, state and country are the fields that we will extract from user's current location and save in db)
                     add(
                         SettingsItem.SectionTitle(
                             title = "Location Settings",
@@ -92,6 +89,33 @@ class MyAccountViewModel : ViewModel() {
                             title = "Location Based Content",
                             checked = locationContent,
                             icon = R.drawable.ic_location
+                        )
+                    )
+                    add(
+                        SettingsItem.ValueRow(
+                            id = "city",
+                            title = "City",
+                            value = city,
+                            icon = R.drawable.ic_location,
+                            showEdit = true
+                        )
+                    )
+                    add(
+                        SettingsItem.ValueRow(
+                            id = "state",
+                            title = "State",
+                            value = state,
+                            icon = R.drawable.ic_location,
+                            showEdit = true
+                        )
+                    )
+                    add(
+                        SettingsItem.ValueRow(
+                            id = "country",
+                            title = "Country",
+                            value = country,
+                            icon = R.drawable.ic_location,
+                            showEdit = true
                         )
                     )
 
@@ -111,17 +135,11 @@ class MyAccountViewModel : ViewModel() {
     // ---  FUNCTIONS FOR HANDLING THE PROFILE IMAGE for uploading ---
     private val _uploadProgress = MutableStateFlow(false)
     val uploadProgress = _uploadProgress.asStateFlow()
-    private var tempImageUri: Uri? = null
 
-    fun createTempImageUri(context: Context): Uri? {
-        val file = File.createTempFile("temp_profile_image", ".jpg", context.cacheDir).apply {
-            createNewFile()
-            deleteOnExit()
-        }
-        val authority = "com.group_12.backstage.provider" // Use your app's package name
-        tempImageUri = FileProvider.getUriForFile(context, authority, file)
-        return tempImageUri
-    }
+    var tempImageUri: Uri?
+        get() = savedStateHandle.get<Uri>("temp_image_uri")
+        set(value) = savedStateHandle.set("temp_image_uri", value)
+
 
     fun uploadProfileImage(uri: Uri) {
         _uploadProgress.value = true
@@ -129,37 +147,45 @@ class MyAccountViewModel : ViewModel() {
         // Firebase Storage library is separate from Auth and Firestore
         val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference.child("profile_images/${user.uid}.jpg")
 
-        storageRef.putFile(uri).addOnSuccessListener {
-            storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                updateUserProfileUrl(downloadUri)
+        storageRef.putFile(uri)
+            .continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    task.exception?.let { throw it }
+                }
+                storageRef.downloadUrl
             }
-        }.addOnFailureListener {
-            _uploadProgress.value = false
-        }
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val downloadUri = task.result
+                    updateUserProfileUrl(downloadUri)
+                } else {
+                    _uploadProgress.value = false
+                    // Handle failure
+                }
+            }
     }
 
     private fun updateUserProfileUrl(uri: Uri) {
         val user = auth.currentUser!!
-        val profileUpdates = userProfileChangeRequest { photoUri = uri }
 
-        user.updateProfile(profileUpdates).addOnCompleteListener {
-            if (it.isSuccessful) {
-                db.collection("users").document(user.uid)
-                    .update("profileImageUrl", uri.toString())
-                    .addOnCompleteListener { firestoreUpdateTask ->
-                        _uploadProgress.value = false
-                        // After everything is saved, refresh the data to update the UI.
-                        // This will re-fetch the user and their new photoUrl.
-                        if (firestoreUpdateTask.isSuccessful) {
-                            refreshAuthStatus()
-                        }
-                    }
+        // First, update the Firestore document.
+        // The listener on this document will automatically update the UI.
+        db.collection("users").document(user.uid)
+            .update("profileImageUrl", uri.toString())
+            .addOnSuccessListener {
+                // Once Firestore is updated, also update the Firebase Auth profile
+                // This is for consistency.
+                val profileUpdates = userProfileChangeRequest { photoUri = uri }
+                user.updateProfile(profileUpdates).addOnCompleteListener {
+                    _uploadProgress.value = false // Hide progress bar
+                }
             }
-            else {
+            .addOnFailureListener {
                 _uploadProgress.value = false
+                // Handle Firestore update failure
             }
-        }
     }
+
 
     // Called from MyAccountFragment when a switch is toggled
     fun updateToggle(id: String, enabled: Boolean) {
@@ -196,8 +222,9 @@ class MyAccountViewModel : ViewModel() {
         // Persist to Firestore
         val uid = auth.currentUser?.uid ?: return
         val field = when (id) {
-            "my_location" -> "myLocation"
-            "my_country" -> "myCountry"
+            "city" -> "city"
+            "state" -> "state"
+            "country" -> "country"
             else -> null
         } ?: return
 

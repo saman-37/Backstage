@@ -1,13 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-  <!-- Base application theme. -->
-  <style name="Base.Theme.Backstage_group_12" parent="Theme.Material3.DayNight.NoActionBar">
-    <!-- Customize your dark theme here. -->
-    <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
-    
-    <!-- Force White Status Bar as per user request -->
-    <item name="android:statusBarColor">@android:color/white</item>
-    <item name="android:windowLightStatusBar">true</item>
-  </style>
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Backstage_group_12" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your dark theme here. -->
+        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+        <!-- Force White Status Bar as per user request -->
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 
     <!-- Splash Screen Theme for Dark Mode -->
     <style name="Theme.Backstage.Splash" parent="Theme.Material3.DayNight.NoActionBar">

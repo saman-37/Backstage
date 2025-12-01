@@ -8,11 +8,9 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isVisible
@@ -30,7 +28,11 @@ import kotlinx.coroutines.launch
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-
+import androidx.core.content.FileProvider
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MyAccountFragment : Fragment(), MyAccountNavigator {
 
@@ -108,20 +110,37 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
                 // User wants location-based content → check if location is enabled
                 if (enabled && !isLocationEnabled()) {
                     showLocationDisabledDialog()
+                } else if (enabled) {
+                    requestLocationPermission()
                 }
             }
         }
     }
 
     // for profile photo
-    private val requestCameraPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) cameraLauncher.launch(vm.getTempImageUri(requireContext()))
-            else Snackbar.make(binding.root, "Camera permission is required.", Snackbar.LENGTH_SHORT).show()
+    private val requestCameraPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+            val tempUri = getTempImageUri(requireContext())
+            vm.tempImageUri = tempUri
+            cameraLauncher.launch(tempUri)
+        } else {
+            Snackbar.make(binding.root, "Camera permission is required.", Snackbar.LENGTH_SHORT).show()
         }
+    }
 
     private val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success) vm.getTempImageUri(requireContext())?.let { uri -> vm.uploadProfileImage(uri) }
+        if (success) {
+            vm.tempImageUri?.let { uri ->
+                vm.uploadProfileImage(uri)
+            }
+        }
+    }
+
+    private fun getTempImageUri(context: Context): Uri {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val tempImageFile = File.createTempFile("JPEG_${timeStamp}_", ".jpg", context.cacheDir)
+
+        return FileProvider.getUriForFile(context, "${context.packageName}.provider", tempImageFile)
     }
 
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -143,57 +162,19 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
             .show()
     }
 
-    // Add this helper function for checking camera permission
     private fun checkCameraPermissionAndLaunch() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            cameraLauncher.launch(vm.getTempImageUri(requireContext()))
+            val tempUri = getTempImageUri(requireContext())
+            vm.tempImageUri = tempUri
+            cameraLauncher.launch(tempUri)
         } else {
             requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
     override fun onEditClicked(id: String) {
-        when (id) {
-            "my_location" -> {
-                showEditDialog(
-                    id = id,
-                    title = "Set your city & state",
-                    hint = "City, State"
-                )
-            }
-            "my_country" -> {
-                showEditDialog(
-                    id = id,
-                    title = "Set your country",
-                    hint = "Country"
-                )
-            }
-            else -> {
-                // Fallback – shouldn't really be hit for now
-                Snackbar.make(binding.root, "Edit: $id", Snackbar.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun showEditDialog(id: String, title: String, hint: String) {
-        val current = vm.getCurrentValue(id) ?: ""
-
-        val input = EditText(requireContext()).apply {
-            setText(current)
-            setSelection(current.length)
-            this.hint = hint          // light hint text: "City, State" / "Country"
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
-        }
-
-        AlertDialog.Builder(requireContext())
-            .setTitle(title)
-            .setView(input)
-            .setPositiveButton("Save") { _, _ ->
-                val newValue = input.text.toString().trim()
-                vm.updateValueRow(id, newValue)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        // Fallback – shouldn't really be hit for now
+        Snackbar.make(binding.root, "Edit: $id", Snackbar.LENGTH_SHORT).show()
     }
 
     // ---- Notifications helpers ----
@@ -259,6 +240,29 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         startActivity(intent)
     }
+
+    private fun requestLocationPermission() {
+        locationPermissionRequest.launch(arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION))
+    }
+
+    private val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        when {
+            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                // Precise location access granted.
+            }
+            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                // Only approximate location access granted.
+            }
+            else -> {
+                // No location access granted.
+            }
+        }
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
