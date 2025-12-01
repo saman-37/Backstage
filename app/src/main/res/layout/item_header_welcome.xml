@@ -8,20 +8,6 @@
     android:gravity="center_horizontal"
     android:paddingBottom="16dp">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@color/deep_sea_blue"
-        android:fontFamily="sans-serif-medium"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:gravity="center_vertical"
-        android:text="My Account"
-        android:textColor="@color/light_teal"
-        android:textSize="24sp"
-        android:textStyle="bold|italic" />
-
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/profileImage"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.MediumComponent"

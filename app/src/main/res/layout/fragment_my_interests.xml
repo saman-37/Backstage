@@ -32,11 +32,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:fontFamily="sans-serif-medium"
-                android:paddingLeft="16dp"
                 android:gravity="center_vertical"
+                android:paddingLeft="16dp"
                 android:text="My Interests"
                 android:textColor="@color/light_teal"
-                android:textSize="24sp"
+                android:textSize="30sp"
                 android:textStyle="bold|italic" />
 
             <ImageButton

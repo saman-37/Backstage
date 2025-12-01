@@ -57,7 +57,8 @@
         <!--        <item name="android:navigationBarContrastEnforced">false</item>-->
 
         <!-- Typography (optional) -->
-        <item name="android:textColor">@color/colorOnBackground</item>
+        <item name="android:textColor">@color/colorOnSurface</item>
+        <item name="android:textColorSecondary">@color/deep_sea_blue</item>
 
     </style>
 
@@ -78,5 +79,15 @@
         <item name="colorOnPrimary">@android:color/white</item>
         <item name="colorSurface">@color/deep_sea_blue</item>
         <item name="colorOnSurface">@android:color/white</item>
+        
     </style>
+
+    <style name="App.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="materialAlertDialogTitleTextStyle">@style/App.MaterialAlertDialog.Title</item>
+    </style>
+
+    <style name="App.MaterialAlertDialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textColor">@color/deep_sea_blue</item>
+    </style>
+
 </resources>

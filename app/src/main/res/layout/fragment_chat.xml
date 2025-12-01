@@ -6,27 +6,55 @@
     android:background="@color/dark_blue">
 
     <!-- Search Bar -->
-    <EditText
-        android:id="@+id/searchEditText"
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:layout_weight="0"
+        android:background="#F5F5F5" />
+
+    <TextView
+        android:id="@+id/msgTitle"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_weight="0"
+        android:background="@color/deep_sea_blue"
+        android:fontFamily="sans-serif-medium"
+        android:paddingLeft="16dp"
+        android:text="Messages"
+        android:textColor="@color/tropical_teal"
+        android:textSize="30sp"
+        android:textStyle="bold|italic" />
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="@android:color/white"
-        android:hint="Search users..."
-        android:padding="12dp"
-        android:drawableStart="@android:drawable/ic_menu_search"
-        android:drawablePadding="8dp"
-        android:textColor="#000000"
-        android:textColorHint="#757575"
-        android:maxLines="1"
-        android:inputType="text" />
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/searchEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:background="@android:color/white"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp"
+            android:hint="Search users..."
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#757575" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/usersRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="8dp" />
+    </LinearLayout>
 
     <!-- Users List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/usersRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"
-        android:clipToPadding="false" />
 
 </LinearLayout>

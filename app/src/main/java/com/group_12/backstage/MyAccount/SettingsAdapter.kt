@@ -58,7 +58,7 @@ class SettingsAdapter(
 
     class HeaderVH(private val b: ItemHeaderWelcomeBinding) : RecyclerView.ViewHolder(b.root) {
         fun bind(item: SettingsItem.Header, nav: MyAccountNavigator) {
-            b.title.text = "My Account"
+
             // If signed in, show just the "Hi, username". If not, show "Welcome to..."
             if (item.showSignIn) {
                 b.subtitle.text = "Welcome to ${item.welcomeBrand}"

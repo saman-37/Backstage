@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.group_12.backstage.R
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -128,8 +129,18 @@ class EventDetailsFragment : Fragment() {
 
         btnBuyTickets.setOnClickListener {
             if (!ticketUrl.isNullOrEmpty()) {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(ticketUrl))
-                startActivity(intent)
+                MaterialAlertDialogBuilder(requireContext(), R.style.App_MaterialAlertDialog)
+                    .setTitle("External Link")
+                    .setMessage("You are about to be redirected to an external website to purchase tickets. Do you want to continue?")
+                    .setPositiveButton("Continue") { dialog, _ ->
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(ticketUrl))
+                        startActivity(intent)
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
             } else {
                 Toast.makeText(context, "Ticket link not available", Toast.LENGTH_SHORT).show()
             }
