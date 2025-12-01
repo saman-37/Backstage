@@ -199,14 +199,9 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
             .setTheme(R.style.Theme_Backstage_DatePicker)
             .setCalendarConstraints(constraintsBuilder.build())
 
-        // Pre-select current filter or Today
+        // Pre-select current filter IF it exists. Otherwise, leave selection empty.
         if (startDateFilter != null && endDateFilter != null) {
             builder.setSelection(androidx.core.util.Pair(startDateFilter!!.time, endDateFilter!!.time))
-        } else {
-            val today = MaterialDatePicker.todayInUtcMilliseconds()
-            // Select Today as start, leaving End null. 
-            // This allows the user to click a future date to complete the range without resetting start.
-            builder.setSelection(androidx.core.util.Pair(today, null))
         }
 
         val dateRangePicker = builder.build()
@@ -218,7 +213,6 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
 
             startDateFilter = Date(startMillis)
             
-            // End date: Add 24 hours (minus 1ms) to insure full coverage of the end day
             val cal = Calendar.getInstance()
             cal.timeInMillis = endMillis
             cal.add(Calendar.DAY_OF_MONTH, 1)
