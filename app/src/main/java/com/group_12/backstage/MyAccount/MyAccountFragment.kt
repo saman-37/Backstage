@@ -128,9 +128,8 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         when (id) {
             "receive_notifications" -> {
                 // User wants notifications ON → check system permission
-                if (enabled && !areNotificationsEnabled()) {
-                    showNotificationsDisabledDialog()
-                }
+                if (enabled) {
+                    showNotificationConfirmationDialog()                }
             }
 
             "location_content" -> {
@@ -142,6 +141,39 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
                 }
             }
         }
+    }
+
+    // for notifications
+    private val requestNotificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (!isGranted) {
+                // User denied the permission, so turn the switch back off
+                vm.updateToggle("receive_notifications", false)
+                Snackbar.make(binding.root, "Notifications cannot be sent without permission.", Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    private fun showNotificationConfirmationDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Enable Notifications")
+            .setMessage("Do you want this application to send you notifications about new messages?")
+            .setPositiveButton("Yes") { dialog, _ ->
+                requestNotificationPermission()
+                dialog.dismiss()
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                // User said no, so turn the toggle back off in the ViewModel
+                vm.updateToggle("receive_notifications", false)
+                dialog.dismiss()
+            }
+            .show()
+    }
+    private fun requestNotificationPermission() {
+        // Check for Android 13 (TIRAMISU) or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Use the launcher to request the new POST_NOTIFICATIONS permission
+            requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        // For older versions, the permission is granted by default, so we don't need to do anything.
     }
 
     // for profile photo
