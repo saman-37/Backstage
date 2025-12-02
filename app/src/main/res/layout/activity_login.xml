@@ -68,17 +68,28 @@
         app:cornerRadius="12dp"
         android:padding="16dp" />
 
+    <!-- Forgot Password? -->
+    <TextView
+        android:id="@+id/tvForgotPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Forgot Password?"
+        android:textColor="#1E88E5"
+        android:textSize="14sp"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="16dp" />
+
     <!-- Signup link -->
     <TextView
         android:id="@+id/tvSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Don't have an account? Sign Up"
+        android:text="Don\'t have an account? Sign Up"
         android:textColor="#1E88E5"
         android:textSize="14sp"
         android:clickable="true"
         android:focusable="true"
         android:layout_marginTop="24dp" />
-
 
 </LinearLayout>

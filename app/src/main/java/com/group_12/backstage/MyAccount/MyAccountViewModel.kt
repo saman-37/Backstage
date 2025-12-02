@@ -60,14 +60,10 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
                 val displayName = firebaseUser?.displayName?.takeIf { it.isNotBlank() }
                 val greetingName = displayName ?: firebaseUser?.email ?: "User"
                 val profileImageUrl = snapshot?.getString("profileImageUrl")?.takeIf { it.isNotBlank() }
+                val email = firebaseUser?.email ?: ""
 
                 val receiveNotifications =
                     snapshot?.getBoolean("receiveNotifications") ?: false
-                val city = snapshot?.getString("city") ?: ""
-                val country = snapshot?.getString("country") ?: ""
-
-                val locationContent =
-                    snapshot?.getBoolean("locationBasedContent") ?: false
 
                 _items.value = buildList {
                     // Header
@@ -78,6 +74,15 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
                             profileImageUrl = profileImageUrl
                         )
                     )
+
+                    // Email
+                    add(SettingsItem.ValueRow(
+                        id = "email",
+                        title = "Email",
+                        value = email,
+                        icon = R.drawable.ic_email,
+                        showEdit = false
+                    ))
 
                     // Notifications section
                     add(SettingsItem.SectionTitle(title = "Notifications"))
@@ -91,44 +96,15 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
                         )
                     )
 
-                    // Location toggle button
-                    add(
-                        SettingsItem.SectionTitle(
-                            title = "Location Settings",
-                            badge = "NEW!"
-                        )
-                    )
-
-                    add(
-                        SettingsItem.Switch(
-                            id = "location_content",
-                            title = "Location Based Content",
-                            checked = locationContent,
-                            icon = R.drawable.ic_location
-                        )
-                    )
-                    add(
-                        SettingsItem.ValueRow(
-                            id = "city",
-                            title = "City",
-                            value = city,
-                            icon = R.drawable.ic_location,
-                            showEdit = true
-                        )
-                    )
-                    // State removed as requested
-                    add(
-                        SettingsItem.ValueRow(
-                            id = "country",
-                            title = "Country",
-                            value = country,
-                            icon = R.drawable.ic_location,
-                            showEdit = true
-                        )
-                    )
-
                     // Account section
                     add(SettingsItem.SectionTitle(title = "Account"))
+                    add(
+                        SettingsItem.Chevron(
+                            id = "reset_password",
+                            title = "Reset Password",
+                            icon = R.drawable.ic_lock
+                        )
+                    )
                     add(
                         SettingsItem.Chevron(
                             id = "sign_out",
@@ -244,45 +220,23 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
         val uid = auth.currentUser?.uid ?: return
         val field = when (id) {
             "receive_notifications" -> "receiveNotifications"
-            "location_content" -> "locationBasedContent"
             else -> null
         } ?: return
 
         db.collection("users").document(uid).set(mapOf(field to enabled), SetOptions.merge())
     }
 
-    // Used by the edit dialog to get the current text
-    fun getCurrentValue(id: String): String? {
-        return _items.value
-            .firstOrNull { it is SettingsItem.ValueRow && it.id == id }
-            ?.let { (it as SettingsItem.ValueRow).value }
-    }
-
-    // Called from MyAccountFragment when user saves new value
-    fun updateValueRow(id: String, newValue: String) {
-        // Update local list
-        _items.value = _items.value.map {
-            if (it is SettingsItem.ValueRow && it.id == id) it.copy(value = newValue) else it
+    fun sendPasswordReset() {
+        val user = auth.currentUser ?: return
+        val email = user.email
+        if (email != null) {
+            auth.sendPasswordResetEmail(email)
+                .addOnSuccessListener {
+                    viewModelScope.launch { _userMessages.emit("Password reset email sent to $email") }
+                }
+                .addOnFailureListener { e ->
+                    viewModelScope.launch { _userMessages.emit("Failed to send reset email: ${e.message}") }
+                }
         }
-
-        // Persist to Firestore
-        val uid = auth.currentUser?.uid ?: return
-        val field = when (id) {
-            "city" -> "city"
-            "country" -> "country"
-            else -> null
-        } ?: return
-
-        db.collection("users").document(uid).set(mapOf(field to newValue), SetOptions.merge())
-    }
-    
-    // Helper to update location fields (simplified for City + Country)
-    fun updateLocation(city: String, country: String) {
-         val uid = auth.currentUser?.uid ?: return
-         val updates = mapOf(
-             "city" to city,
-             "country" to country
-         )
-         db.collection("users").document(uid).set(updates, SetOptions.merge())
     }
 }
