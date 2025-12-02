@@ -72,6 +72,7 @@ class SettingsAdapter(
                 // Load image using Glide
                 Glide.with(b.root.context)
                     .load(item.profileImageUrl)
+                    .circleCrop() // Added circleCrop to make it round
                     .placeholder(R.drawable.ic_account_circle)
                     .error(R.drawable.ic_account_circle)
                     .into(b.profileImage)
@@ -132,8 +133,16 @@ class SettingsAdapter(
             b.icon.setImageResource(item.icon)
             b.title.text = item.title
             b.value.text = item.value
-            b.edit.setOnClickListener { nav.onEditClicked(item.id) }
-            b.edit.visibility = if (item.showEdit) View.VISIBLE else View.GONE
+            
+            // Handle edit click on both the button and the whole row if editable
+            if (item.showEdit) {
+                b.edit.visibility = View.VISIBLE
+                b.edit.setOnClickListener { nav.onEditClicked(item.id) }
+                b.root.setOnClickListener { nav.onEditClicked(item.id) }
+            } else {
+                b.edit.visibility = View.GONE
+                b.root.setOnClickListener(null)
+            }
         }
     }
 

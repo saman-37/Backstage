@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter Location"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="10dp"/>
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Start typing..."
+        android:inputType="textPostalAddress"
+        android:imeOptions="actionDone"
+        android:maxLines="1"
+        android:dropDownAnchor="@id/autoCompleteInput"
+        android:dropDownWidth="match_parent" />
+
+</LinearLayout>

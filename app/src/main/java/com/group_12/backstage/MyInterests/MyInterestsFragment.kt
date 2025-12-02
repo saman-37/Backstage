@@ -246,19 +246,29 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
     private fun showLocationFilterDialog() {
         // Use AutoCompleteTextView for suggestions
         val input = AutoCompleteTextView(requireContext())
-        input.hint = "Enter City (e.g. Vancouver)"
+        input.hint = "Enter City or Venue"
         input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
         input.setText(locationFilter) // Pre-fill with current filter
 
-        // Suggestion List
-        val cities = arrayOf(
-            "Vancouver", "Toronto", "Montreal", "Calgary", "Edmonton", "Ottawa", "Winnipeg", "Quebec City", "Halifax", "Victoria",
-            "Saskatoon", "Regina", "St. John's", "Kelowna", "Hamilton", "London", "Kitchener", "Windsor", "Oshawa",
-            "New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose"
-        )
-        
-        // Use custom layout for dropdown items
-        val adapter = ArrayAdapter(requireContext(), R.layout.item_autocomplete_city, cities)
+        // Dynamic Suggestion List
+        // 1. Collect all raw locations from the user's event list
+        val rawLocations = eventList.map { it.location.trim() }.filter { it.isNotEmpty() }
+
+        // 2. Attempt to extract City names if format is "Venue, City, ..."
+        val extractedCities = rawLocations.mapNotNull { loc ->
+            val parts = loc.split(",")
+            if (parts.size >= 2) {
+                parts[1].trim() // Assume the second part is often the city
+            } else {
+                null
+            }
+        }
+
+        // 3. Combine, remove duplicates, and sort
+        val suggestions = (rawLocations + extractedCities).distinct().sorted()
+
+        // Use custom layout for dropdown items if available, else standard
+        val adapter = ArrayAdapter(requireContext(), R.layout.item_autocomplete_city, suggestions)
         input.setAdapter(adapter)
         input.threshold = 1 // Start suggesting from 1 character
 
