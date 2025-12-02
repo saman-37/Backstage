@@ -3,14 +3,15 @@ package com.group_12.backstage.Chat
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.group_12.backstage.R
@@ -89,19 +90,23 @@ class DirectMessageActivity : AppCompatActivity() {
 
     private fun sendMessage(sender: String, message: String) {
         if (chatId == null) return
+        val timestamp = System.currentTimeMillis()
 
         val msg = hashMapOf(
             "senderId" to sender,
             "text" to message,
-            "timestamp" to System.currentTimeMillis()
+            "timestamp" to timestamp
         )
 
-        db.collection("chats")
-            .document(chatId!!)
-            .collection("messages")
+        val chatDocRef = db.collection("chats").document(chatId!!)
+
+        chatDocRef.collection("messages")
             .add(msg)
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
+            .addOnSuccessListener {
+                // Update the last message timestamp for the chat
+                chatDocRef.set(mapOf("lastMessageTimestamp" to timestamp), com.google.firebase.firestore.SetOptions.merge())
+            }
+            .addOnFailureListener { Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
             }
     }
 

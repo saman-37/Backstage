@@ -10,5 +10,6 @@ data class User(
     val city: String = "",
     val state: String = "",
     val country: String = "",
-    val locationBasedContent: Boolean = false
+    val locationBasedContent: Boolean = false,
+    var lastMessageTimestamp: Long = 0L // Add this line
 )

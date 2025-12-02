@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,8 @@ class ChatFragment : Fragment() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val listeners = mutableListOf<ListenerRegistration>()
+    private val allUsers = mutableListOf<User>()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,7 +39,6 @@ class ChatFragment : Fragment() {
         searchEditText = view.findViewById(R.id.searchEditText)
 
         setupRecyclerView()
-        fetchUsers()
         setupSearch()
 
         return view
@@ -53,26 +55,51 @@ class ChatFragment : Fragment() {
         recyclerView.adapter = adapter
     }
 
-    private fun fetchUsers() {
-        db.collection("users").get()
-            .addOnSuccessListener { documents ->
-                val newList = mutableListOf<User>()
-                val currentUserId = auth.currentUser?.uid
+    private fun fetchUsersAndListenForUpdates() {
+        val currentUserId = auth.currentUser?.uid ?: return
+        listeners.forEach { it.remove() }
+        listeners.clear()
 
-                for (doc in documents) {
-                    val user = doc.toObject(User::class.java)
-                    if (user.uid != currentUserId) newList.add(user)
+        db.collection("users").get().addOnSuccessListener { userDocuments ->
+            allUsers.clear()
+            for (doc in userDocuments) {
+                if (doc.id != currentUserId) {
+                    allUsers.add(doc.toObject(User::class.java))
                 }
-
-                userList = newList
-                adapter.updateList(userList)
-
             }
+
+            allUsers.forEach { user ->
+                val userIds = listOf(currentUserId, user.uid).sorted()
+                val chatId = "chat_${userIds[0]}_${userIds[1]}"
+
+                val listener = db.collection("chats").document(chatId)
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            Log.w("ChatFragment", "Listen failed.", e)
+                            return@addSnapshotListener
+                        }
+
+                        if (snapshot != null && snapshot.exists()) {
+                            val timestamp = snapshot.getLong("lastMessageTimestamp") ?: 0L
+                            val userToUpdate = allUsers.find { it.uid == user.uid }
+                            userToUpdate?.lastMessageTimestamp = timestamp
+                        }
+
+                        // Sort and update the list
+                        val sortedUsers = allUsers.sortedByDescending { it.lastMessageTimestamp }
+                        userList.clear()
+                        userList.addAll(sortedUsers)
+                        filter(searchEditText.text.toString())
+                    }
+                listeners.add(listener)
+            }
+        }
     }
+
 
     override fun onResume() {
         super.onResume()
-        fetchUsers() // refresh when coming back
+        fetchUsersAndListenForUpdates()
     }
 
     private fun setupSearch() {
@@ -86,11 +113,16 @@ class ChatFragment : Fragment() {
     }
 
     private fun filter(text: String) {
-        val filteredList = userList.filter {
-            it.name.contains(text, true)
+        val filteredList = if (text.isBlank()) {
+            userList
+        } else {
+            userList.filter {
+                it.name.contains(text, true)
+            }
         }
         adapter.updateList(filteredList)
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -99,3 +131,4 @@ class ChatFragment : Fragment() {
         listeners.clear()
     }
 }
+
