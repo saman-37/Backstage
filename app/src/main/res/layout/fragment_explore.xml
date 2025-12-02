@@ -45,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:letterSpacing="0.05"
-                android:text="SEARCH ARTISTS, CONCERTS, VENUES OR LOCATIONS"
+                android:text="SEARCH ARTISTS, CONCERTS, VENUES OR CITY"
                 android:textAllCaps="true"
                 android:textColor="@color/sunset_gold"
                 android:textSize="12sp"
@@ -75,7 +75,8 @@
                         android:focusableInTouchMode="true"
                         android:iconifiedByDefault="false"
                         android:padding="8dp"
-                        android:queryHint="Artist, Event, Venue or city"
+                        android:queryHint="Search Artist, Event, Venue or city"
+                        app:defaultQueryHint="Artist, Event, Venue or city"
                         app:iconifiedByDefault="false"
                         app:queryBackground="@android:color/transparent" />
                 </androidx.cardview.widget.CardView>
