@@ -1,12 +1,17 @@
 package com.group_12.backstage.Chat
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.SetOptions
 import com.group_12.backstage.R
 import com.group_12.backstage.util.NotificationHelper
 
@@ -38,6 +44,8 @@ class DirectMessageActivity : AppCompatActivity() {
     private lateinit var toolbarUserName: TextView
     private lateinit var backButton: ImageView
 
+    private val NOTIFICATION_PERMISSION_REQUEST_CODE = 101
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_direct_message)
@@ -58,8 +66,35 @@ class DirectMessageActivity : AppCompatActivity() {
 
         setupRecyclerView()
         setupChatId()
+        markChatAsRead() // Mark chat as read when activity opens
         setupSendButton()
         listenForMessages()
+
+        // Request notification permission when the activity is created
+        requestNotificationPermission()
+    }
+
+    private fun requestNotificationPermission() {
+        // Permission is only needed for Android 13 (API 33) and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED) {
+                // If permission is not granted, request it.
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+
+    private fun markChatAsRead() {
+        val currentUserId = auth.currentUser?.uid
+        if (chatId != null && currentUserId != null) {
+            db.collection("chats").document(chatId!!)
+                .set(mapOf("isRead_${currentUserId}" to true), SetOptions.merge())
+        }
     }
 
     private fun setupRecyclerView() {
@@ -82,39 +117,62 @@ class DirectMessageActivity : AppCompatActivity() {
         sendButton.setOnClickListener {
             val text = messageEditText.text.toString()
             if (text.isNotBlank()) {
-                // *** FIX: Get the current user's UID ***
                 val currentUser = auth.currentUser ?: return@setOnClickListener
-                // *** FIX: Pass the UID to sendMessage ***
                 sendMessage(currentUser.uid, text)
                 messageEditText.text.clear()
             }
         }
     }
 
+    private fun sendMessage(senderId: String, message: String) {
+        if (chatId == null) return
+
+        val currentUser = auth.currentUser ?: return
+        val senderName = currentUser.displayName ?: "Anonymous"
+        val receiverId = targetUserId ?: return
+
+        val timestamp = System.currentTimeMillis()
+
+        val msg = hashMapOf(
+            "senderId" to senderId,
+            "senderName" to senderName, // Important for notifications
+            "text" to message,
+            "timestamp" to timestamp
+        )
+
+        val chatDocRef = db.collection("chats").document(chatId!!)
+
+        chatDocRef.collection("messages")
+            .add(msg)
+            .addOnSuccessListener {
+                // Update chat metadata for sorting and unread status
+                val chatUpdates = mapOf(
+                    "lastMessageTimestamp" to timestamp,
+                    "lastMessageSenderId" to senderId,
+                    "isRead_${receiverId}" to false, // Mark as unread for the receiver
+                    "isRead_${senderId}" to true      // Mark as read for the sender
+                )
+                chatDocRef.set(chatUpdates, SetOptions.merge())
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     private fun listenForMessages() {
         if (chatId == null) return
         val currentUserId = auth.currentUser?.uid ?: ""
 
-        // This listener will now only be responsible for ADDING new messages
-        // We will load the initial history separately.
         listener = db.collection("chats")
             .document(chatId!!)
             .collection("messages")
             .orderBy("timestamp")
             .addSnapshotListener { snapshots, e ->
-                if (e != null) {
-                    // Handle error, maybe log it or show a Toast
-                    return@addSnapshotListener
-                }
-                if (snapshots == null) {
-                    return@addSnapshotListener
-                }
+                if (e != null) { return@addSnapshotListener }
+                if (snapshots == null) { return@addSnapshotListener }
 
-                // --- Consolidated Logic for NEW Messages ---
                 val newMessages = mutableListOf<Message>()
                 for (docChange in snapshots.documentChanges) {
-
-                    // We only care about documents that were newly added since the last update
                     if (docChange.type == DocumentChange.Type.ADDED) {
                         val messageDoc = docChange.document
                         val senderId = messageDoc.getString("senderId") ?: ""
@@ -124,27 +182,21 @@ class DirectMessageActivity : AppCompatActivity() {
 
                         newMessages.add(Message(senderId, text, timestamp, isSentByCurrentUser))
 
-                        // --- Notification Logic ---
-                        // Only show a notification if the message is NOT from the current user
-                        // AND the chat screen is not currently visible (app is in background).
+                        // --- NOTIFICATION LOGIC ---
+                        // Show notification if the message is from another user AND the chat screen isn't active.
                         if (!isSentByCurrentUser && lifecycle.currentState != Lifecycle.State.RESUMED) {
-                            val senderName = messageDoc.getString("senderName") ?: "Someone"
-                            NotificationHelper.showNewMessageNotification(this, senderName, text)
+                            if (checkNotificationPermission()) {
+                                val senderName = messageDoc.getString("senderName") ?: "Someone"
+                                NotificationHelper.showNewMessageNotification(this, senderName, text)
+                            }
                         }
                     }
                 }
 
-                // --- UI Update ---
                 if (newMessages.isNotEmpty()) {
-                    // Add the new messages to our main list
                     messages.addAll(newMessages)
-                    // Sort by timestamp to handle any out-of-order delivery
                     messages.sortBy { it.timestamp }
-
-                    // Notify the adapter of the changes
                     adapter.notifyDataSetChanged()
-
-                    // Update UI visibility and scroll to the newest message at the bottom
                     emptyChatTextView.isVisible = messages.isEmpty()
                     recyclerView.isVisible = messages.isNotEmpty()
                     recyclerView.scrollToPosition(messages.size - 1)
@@ -152,31 +204,32 @@ class DirectMessageActivity : AppCompatActivity() {
             }
     }
 
-
-    private fun sendMessage(senderId: String, message: String) { // *** FIX: Changed parameter to senderId ***
-        if (chatId == null) return
-
-        val currentUser = auth.currentUser
-        // We get the sender's display name here to store it with the message
-        val senderName = currentUser?.displayName ?: "Anonymous"
-
-        val msg = hashMapOf(
-            "senderId" to senderId,       // The user's unique ID
-            "senderName" to senderName,   // The user's display name for notifications
-            "text" to message,
-            "timestamp" to System.currentTimeMillis()
-        )
-
-        db.collection("chats")
-            .document(chatId!!)
-            .collection("messages")
-            .add(msg)
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
-            }
+    private fun checkNotificationPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED
+        } else {
+            // For older Android versions, permission is implicitly granted.
+            true
+        }
     }
 
-
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                Toast.makeText(
+                    this,
+                    "Notifications disabled. You won't get message alerts.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
