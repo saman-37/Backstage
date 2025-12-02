@@ -14,6 +14,7 @@ import com.group_12.backstage.R
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.group_12.backstage.MyAccount.LocationHelper
 
 class RegisterActivity : AppCompatActivity() {
@@ -45,61 +46,22 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Create Firebase Auth account
-            auth.createUserWithEmailAndPassword(emailText, passText)
+            // 1. Check if the username already exists in Firestore
+            db.collection("users")
+                .whereEqualTo("name", nameText)
+                .get()
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        // 1. Get the new user
-                        val firebaseUser = auth.currentUser
-                        val uid = firebaseUser!!.uid
-
-                        // 2. Create the profile update request with the name
-                        val profileUpdates = userProfileChangeRequest {
-                            displayName = nameText
+                        if (task.result != null && !task.result!!.isEmpty) {
+                            // Username already exists
+                            Toast.makeText(this, "Username already exists. Please choose another.", Toast.LENGTH_LONG).show()
+                        } else {
+                            // Username is unique, proceed with registration
+                            createUser(nameText, emailText, passText)
                         }
-
-
-                        // Update the profile AND WAIT for it to finish
-                        firebaseUser.updateProfile(profileUpdates).addOnCompleteListener { profileTask ->
-                            if (profileTask.isSuccessful) {
-                                // PROFILE UPDATE IS NOW COMPLETE!
-                                // It is now safe to navigate.
-                                Toast.makeText(this, "Registered!", Toast.LENGTH_SHORT).show()
-                                startActivity(Intent(this, LoginActivity::class.java))
-                                finish()
-                            } else {
-                                // Profile update failed, but user was still created.
-                                // Inform the user and let them proceed to login.
-                                Toast.makeText(this, "Registration successful, but failed to set display name.", Toast.LENGTH_LONG).show()
-                                startActivity(Intent(this, LoginActivity::class.java))
-                                finish()
-                            }
-                        }
-
-                        // Save user data in Firestore in the background
-                        val userMap = hashMapOf(
-                            "uid" to uid,
-                            "name" to nameText,
-                            "email" to emailText,
-                            "profileImageUrl" to "",
-                            "bio" to "",
-                            //4 additional fields from MyAccount
-                            "receiveNotifications" to false,          // default
-                            //TODO fill via location
-                            "city" to "",
-                            "state" to "",
-                            "country" to "",
-                            "locationBasedContent" to false           // default
-                        )
-                        db.collection("users").document(uid).set(userMap)
-                            .addOnFailureListener {
-                                // One-time location set at account creation
-                                ensureLocationAndUpdate(uid)
-                                it.printStackTrace()  // Optional: log the error, but user is already navigated
-                            }
-
                     } else {
-                        Toast.makeText(this, "Registration failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        // Error checking for username
+                        Toast.makeText(this, "Error checking username: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
         }
@@ -110,6 +72,72 @@ class RegisterActivity : AppCompatActivity() {
             finish()
         }
     }
+
+    // seperate user creation logic
+    private fun createUser(nameText: String, emailText: String, passText: String) {
+        // Create Firebase Auth account
+        auth.createUserWithEmailAndPassword(emailText, passText)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val firebaseUser = auth.currentUser
+                    val uid = firebaseUser!!.uid
+
+                    // Create the profile update request with the name
+                    val profileUpdates = userProfileChangeRequest {
+                        displayName = nameText
+                    }
+
+                    // Update the profile AND WAIT for it to finish
+                    firebaseUser.updateProfile(profileUpdates).addOnCompleteListener { profileTask ->
+                        if (profileTask.isSuccessful) {
+                            Toast.makeText(this, "Registered!", Toast.LENGTH_SHORT).show()
+                            startActivity(Intent(this, LoginActivity::class.java))
+                            finish()
+                        } else {
+                            // Profile update failed, but user was still created.
+                            Toast.makeText(this, "Registration successful, but failed to set display name.", Toast.LENGTH_LONG).show()
+                            startActivity(Intent(this, LoginActivity::class.java))
+                            finish()
+                        }
+                    }
+
+                    // Save user data in Firestore in the background
+                    val userMap = hashMapOf(
+                        "uid" to uid,
+                        "name" to nameText,
+                        "email" to emailText,
+                        "profileImageUrl" to "",
+                        "bio" to "",
+                        "receiveNotifications" to false,
+                        "city" to "",
+                        "state" to "",
+                        "country" to "",
+                        "locationBasedContent" to false
+                    )
+                    db.collection("users").document(uid).set(userMap)
+                        .addOnSuccessListener {
+                            // One-time location set at account creation
+                            ensureLocationAndUpdate(uid)
+                        }
+                        .addOnFailureListener {
+                            it.printStackTrace()  // Optional: log the error, but user is already navigated
+                        }
+
+                } else {
+                    // --- IMPROVED ERROR HANDLING ---
+                    try {
+                        throw task.exception!!
+                    } catch (e: FirebaseAuthWeakPasswordException) {
+                        // Specific error for short password
+                        Toast.makeText(this, "Password must contain at least 6 characters.", Toast.LENGTH_LONG).show()
+                    } catch (e: Exception) {
+                        // All other registration errors
+                        Toast.makeText(this, "Registration failed: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+    }
+
 
     private val locationPermissionLauncher =
         registerForActivityResult(
@@ -150,3 +178,4 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 }
+
