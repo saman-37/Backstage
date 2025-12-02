@@ -89,7 +89,8 @@ class RegisterActivity : AppCompatActivity() {
                             "city" to "",
                             "state" to "",
                             "country" to "",
-                            "locationBasedContent" to false           // default
+                            "locationBasedContent" to false,          // default
+                            "fcmToken" to ""                          // Will be set on first login
                         )
                         db.collection("users").document(uid).set(userMap)
                             .addOnFailureListener {

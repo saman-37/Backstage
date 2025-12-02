@@ -26,7 +26,17 @@
         android:id="@+id/navigation_friends"
         android:name="com.group_12.backstage.ConcertConnect.FindFriendsFragment"
         android:label="Friends"
-        tools:layout="@layout/fragment_find_friends" />
+        tools:layout="@layout/fragment_find_friends">
+        <action
+            android:id="@+id/action_friends_to_allRequests"
+            app:destination="@id/allFriendRequestsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/allFriendRequestsFragment"
+        android:name="com.group_12.backstage.ConcertConnect.AllFriendRequestsFragment"
+        android:label="All Friend Requests"
+        tools:layout="@layout/fragment_all_friend_requests" />
 
     <fragment
         android:id="@+id/navigation_chat"

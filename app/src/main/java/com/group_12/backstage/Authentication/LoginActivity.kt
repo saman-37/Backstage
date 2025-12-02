@@ -14,6 +14,7 @@ import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.group_12.backstage.MyAccount.LocationHelper
+import com.group_12.backstage.notifications.FcmTokenManager
 
 class LoginActivity : AppCompatActivity() {
 
@@ -44,6 +45,8 @@ class LoginActivity : AppCompatActivity() {
                     val uid = auth.currentUser!!.uid
                     // One-time location refresh on fresh login
                     ensureLocationAndUpdate(uid)
+                    // Initialize FCM token for push notifications
+                    FcmTokenManager.initializeFcmToken()
                     Toast.makeText(this, "Logged in!", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()

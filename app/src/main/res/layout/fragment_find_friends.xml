@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/dark_blue">
 
+    <!-- Header -->
     <TextView
         android:id="@+id/title2"
         android:layout_width="match_parent"
@@ -20,95 +21,151 @@
         android:textSize="30sp"
         android:textStyle="bold|italic" />
 
-    <androidx.core.widget.NestedScrollView
+    <!-- Search Bar -->
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:startIconDrawable="@android:drawable/ic_menu_search"
+        app:startIconTint="@android:color/white"
+        app:boxBackgroundColor="@color/colorSurface"
+        app:boxCornerRadiusTopStart="8dp"
+        app:boxCornerRadiusTopEnd="8dp"
+        app:boxCornerRadiusBottomStart="8dp"
+        app:boxCornerRadiusBottomEnd="8dp"
+        app:boxStrokeWidth="0dp"
+        android:textColorHint="#A0A0A0">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/searchEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search by name or email"
+            android:textColor="@android:color/white"
+            android:inputType="textPersonName"
+            android:maxLines="1"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Search Results (Visible only when searching) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/searchResultsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:paddingHorizontal="16dp"/>
+
+    <!-- Main Content (Scrollable) -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/mainContentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="16dp">
 
-            <!-- Friend Requests Section -->
+        <!-- Friend Requests Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
             <LinearLayout
-                android:id="@+id/requestsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="Friend Requests"
                     android:textStyle="bold"
                     android:textColor="@color/tropical_teal"
-                    android:textSize="18sp"
-                    android:layout_marginBottom="8dp"/>
+                    android:textSize="18sp"/>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/requestsRecyclerView"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/seeAllRequestsButton"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/colorOutline"
-                    android:layout_marginVertical="16dp"/>
+                    android:text="See all"
+                    android:textColor="@color/tropical_teal"
+                    android:textSize="14sp"
+                    android:padding="8dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:visibility="gone"/>
             </LinearLayout>
 
-            <!-- Search Section -->
+            <TextView
+                android:id="@+id/emptyRequestsText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No new requests"
+                android:textColor="#AAAAAA"
+                android:gravity="center"
+                android:padding="16dp"
+                android:visibility="gone"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/requestsRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorOutline"
+            android:layout_marginVertical="8dp"/>
+
+        <!-- Friends List Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Search People"
+                android:text="My Friends"
                 android:textStyle="bold"
                 android:textColor="@color/tropical_teal"
                 android:textSize="18sp"
                 android:layout_marginBottom="8dp"/>
 
-            <com.google.android.material.textfield.TextInputLayout
+            <TextView
+                android:id="@+id/emptyFriendsText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:startIconDrawable="@android:drawable/ic_menu_search"
-                app:startIconTint="@android:color/white"
-                app:boxBackgroundColor="@color/colorSurface"
-                app:boxCornerRadiusTopStart="8dp"
-                app:boxCornerRadiusTopEnd="8dp"
-                app:boxCornerRadiusBottomStart="8dp"
-                app:boxCornerRadiusBottomEnd="8dp"
-                app:boxStrokeWidth="0dp"
-                android:textColorHint="#A0A0A0"
-                android:layout_marginBottom="16dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/searchEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Search by name or email"
-                    android:textColor="@android:color/white"
-                    android:inputType="textPersonName"
-                    android:maxLines="1"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                android:text="No friends yet"
+                android:textColor="#AAAAAA"
+                android:gravity="center"
+                android:padding="16dp"
+                android:visibility="gone"/>
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/searchResultsRecyclerView"
+                android:id="@+id/friendsRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"/>
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone"
-                android:indeterminateTint="@color/tropical_teal"/>
+        </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:indeterminateTint="@color/tropical_teal"/>
 
 </LinearLayout>

@@ -92,6 +92,7 @@ dependencies {
     //implementation(libs.firebase.firestore.ktx)
     implementation("com.google.firebase:firebase-firestore")
     implementation ("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-messaging")
 
     //Glide in MyInterests
     implementation("com.github.bumptech.glide:glide:4.16.0")

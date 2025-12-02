@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/dark_blue">
+
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/deep_sea_blue"
+        app:title="All Friend Requests"
+        app:titleTextColor="@color/light_teal"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/light_teal" />
+
+    <!-- Content -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/requestsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:clipToPadding="false"/>
+
+        <TextView
+            android:id="@+id/emptyRequestsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No friend requests"
+            android:textColor="#AAAAAA"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:padding="32dp"
+            android:visibility="gone"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/tropical_teal"/>
+
+    </FrameLayout>
+
+</LinearLayout>

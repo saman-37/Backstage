@@ -85,4 +85,10 @@ class MyInterestsAdapter(
     }
 
     override fun getItemCount(): Int = events.size
+
+    fun updateEvents(newEvents: List<Event>) {
+        events.clear()
+        events.addAll(newEvents)
+        notifyDataSetChanged()
+    }
 }
