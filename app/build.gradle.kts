@@ -82,7 +82,8 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-
+    //circular image in chat
+    implementation("de.hdodenhof:circleimageview:3.1.0")
     //Firebase
 //    implementation(platform(libs.firebase.bom))
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))

@@ -10,12 +10,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.with
+import androidx.compose.ui.semantics.error
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,6 +26,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
 import com.group_12.backstage.R
 import com.group_12.backstage.util.NotificationHelper
+import de.hdodenhof.circleimageview.CircleImageView
 
 class DirectMessageActivity : AppCompatActivity() {
 
@@ -44,6 +48,10 @@ class DirectMessageActivity : AppCompatActivity() {
     private lateinit var toolbarUserName: TextView
     private lateinit var backButton: ImageView
 
+    private var targetUserProfileImage: String? = null
+    private lateinit var toolbarProfileImage: CircleImageView
+
+
     private val NOTIFICATION_PERMISSION_REQUEST_CODE = 101
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +60,7 @@ class DirectMessageActivity : AppCompatActivity() {
 
         targetUserId = intent.getStringExtra("targetUserId")
         targetUserName = intent.getStringExtra("targetUserName")
+        targetUserProfileImage = intent.getStringExtra("targetUserProfileImage")
 
         recyclerView = findViewById(R.id.messagesRecyclerView)
         messageEditText = findViewById(R.id.messageEditText)
@@ -60,9 +69,23 @@ class DirectMessageActivity : AppCompatActivity() {
 
         toolbarUserName = findViewById(R.id.toolbarUserName)
         backButton = findViewById(R.id.backButton)
+        toolbarProfileImage = findViewById(R.id.toolbarProfileImage)
 
         toolbarUserName.text = targetUserName ?: "Chat"
         backButton.setOnClickListener { onBackPressed() }
+
+        // *** LOAD THE IMAGE WITH GLIDE ***
+        if (!targetUserProfileImage.isNullOrEmpty()) {
+            Glide.with(this)
+                .load(targetUserProfileImage)
+                .placeholder(R.drawable.ic_person) // Show placeholder while loading
+                .error(R.drawable.ic_person)       // Show error placeholder if it fails
+                .into(toolbarProfileImage)
+        } else {
+            // Set a default image if the URL is null or empty
+            toolbarProfileImage.setImageResource(R.drawable.ic_person)
+        }
+
 
         setupRecyclerView()
         setupChatId()

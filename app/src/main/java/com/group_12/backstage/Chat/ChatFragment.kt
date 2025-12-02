@@ -49,6 +49,7 @@ class ChatFragment : Fragment() {
             val intent = Intent(requireContext(), DirectMessageActivity::class.java)
             intent.putExtra("targetUserId", user.uid)
             intent.putExtra("targetUserName", user.name)
+            intent.putExtra("targetUserProfileImage", user.profileImageUrl)
             startActivity(intent)
         }
         recyclerView.layoutManager = LinearLayoutManager(requireContext())

@@ -21,7 +21,18 @@
         android:focusable="true"
         android:layout_gravity="center_vertical"
         app:tint="@android:color/black"
-        android:layout_marginTop="35dp"/>
+        android:layout_marginTop="30dp"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/toolbarProfileImage"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_toEndOf="@id/backButton"
+        android:layout_marginStart="12dp"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="30dp"
+        android:src="@drawable/ic_person" /> <!-- A default placeholder icon -->
+
 
     <!-- User name -->
     <TextView
@@ -30,11 +41,11 @@
         android:layout_height="wrap_content"
         android:text="User Name"
         android:textColor="@android:color/black"
-        android:textSize="18sp"
+        android:textSize="26sp"
         android:textStyle="bold"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="8dp"
         android:layout_gravity="center_vertical"
-        android:layout_marginTop="35dp"/>
+        android:layout_marginTop="32dp"/>
 
 </androidx.appcompat.widget.Toolbar>
 
