@@ -139,7 +139,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="8dp"
                     android:text="Interested"
-                    app:backgroundTint="@color/colorSecondary" />
+                    />
 
                 <Button
                     android:id="@+id/btnGoing"
@@ -147,7 +147,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="8dp"
                     android:text="Going"
-                    app:backgroundTint="@color/colorPrimary" />
+                    />
             </LinearLayout>
 
         </LinearLayout>
