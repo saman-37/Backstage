@@ -14,6 +14,8 @@ import com.group_12.backstage.R
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.group_12.backstage.MyAccount.LocationHelper
 
@@ -130,7 +132,14 @@ class RegisterActivity : AppCompatActivity() {
                     } catch (e: FirebaseAuthWeakPasswordException) {
                         // Specific error for short password
                         Toast.makeText(this, "Password must contain at least 6 characters.", Toast.LENGTH_LONG).show()
-                    } catch (e: Exception) {
+                    } catch (e: FirebaseAuthInvalidCredentialsException) {
+                        // Specific error for badly formatted email
+                        Toast.makeText(this, "Invalid email format.", Toast.LENGTH_LONG).show()
+                    } catch (e: FirebaseAuthUserCollisionException) {
+                        // Specific error for email that already exists
+                        Toast.makeText(this, "An account with this email already exists.", Toast.LENGTH_LONG).show()
+                    }
+                    catch (e: Exception) {
                         // All other registration errors
                         Toast.makeText(this, "Registration failed: ${e.message}", Toast.LENGTH_LONG).show()
                     }
@@ -178,4 +187,3 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 }
-

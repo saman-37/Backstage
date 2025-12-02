@@ -81,11 +81,11 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         viewLifecycleOwner.lifecycleScope.launch {
             vm.items.collectLatest { adapter.submitList(it) }
         }
-        
+
         viewLifecycleOwner.lifecycleScope.launch {
             vm.uploadProgress.collectLatest { binding.progress.isVisible = it } //for profile image; to show the progress bar
         }
-        
+
         viewLifecycleOwner.lifecycleScope.launch {
              vm.userMessages.collectLatest { message ->
                  Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
@@ -110,6 +110,8 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         FirebaseAuth.getInstance().signOut()
         Snackbar.make(binding.root, "Signed out successfully", Snackbar.LENGTH_SHORT).show()
         vm.refreshAuthStatus()
+        val intent = Intent(requireContext(), LoginActivity::class.java)
+        startActivity(intent)
     }
 
     override fun onChevronClicked(id: String) {
@@ -282,7 +284,7 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
 
     private fun showLocationEditDialog(fieldId: String) {
         val currentValue = vm.getCurrentValue(fieldId) ?: ""
-        
+
         // Get context for filtering
         val currentCountry = vm.getCurrentValue("country") ?: ""
 
@@ -291,7 +293,7 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         val input = view.findViewById<AutoCompleteTextView>(R.id.autoCompleteInput)
         input.setText(currentValue)
         input.hint = "Start typing ${fieldId.replaceFirstChar { it.uppercase() }}..."
-        
+
         // Use custom layout for dropdown items
         val adapter = object : ArrayAdapter<String>(requireContext(), R.layout.item_autocomplete_city) {
             override fun getFilter(): Filter {
@@ -307,12 +309,12 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
             }
         }
         input.setAdapter(adapter)
-        input.threshold = 1 
+        input.threshold = 1
 
         // Track selection to avoid over-writing with partial text
         var selectedCity = ""
         var selectedCountry = ""
-        
+
         // Map to store data for selections
         val suggestionData = mutableMapOf<String, Map<String, String>>()
 
@@ -327,13 +329,13 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         input.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            
+
             override fun afterTextChanged(s: Editable?) {
                 val query = s.toString()
-                
+
                 // 1. Remove any pending search tasks (Debounce)
                 searchRunnable?.let { handler.removeCallbacks(it) }
-                
+
                 // 2. Cancel any in-flight Volley requests to avoid backlog
                 requestQueue.cancelAll(requestTag)
 
@@ -341,10 +343,10 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
                     // 3. Schedule the new search after a reduced delay (200ms is enough for Photon)
                     searchRunnable = Runnable {
                         val encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString())
-                        
+
                         // Photon API URL
                         var url = "https://photon.komoot.io/api/?q=$encodedQuery&limit=10"
-                        
+
                         // Customize Query based on field
                         if (fieldId == "country") {
                              url += "&osm_tag=place:country"
@@ -358,7 +360,7 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
                              // Filter for places (cities, towns, villages)
                              url += "&osm_tag=place:city&osm_tag=place:town&osm_tag=place:village"
                         }
-                        
+
                         // Photon returns a JSON Object (FeatureCollection), not Array
                         val jsonObjectRequest = object : JsonObjectRequest(
                             Method.GET, url, null,
@@ -367,29 +369,29 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
                                 if (input.isAttachedToWindow) {
                                     adapter.clear()
                                     suggestionData.clear()
-                                    
+
                                     val features = response.optJSONArray("features")
                                     if (features != null) {
                                         for (i in 0 until features.length()) {
                                             val feature = features.getJSONObject(i)
                                             val props = feature.optJSONObject("properties")
-                                            
+
                                             if (props != null) {
                                                 val name = props.optString("name")
                                                 val country = props.optString("country")
                                                 val state = props.optString("state")
-                                                
+
                                                 // Determine if this is a city or just a country
                                                 val city = if (fieldId == "city") name else props.optString("city")
-                                                
+
                                                 // Build a nice display string
                                                 val displayParts = mutableListOf<String>()
                                                 displayParts.add(name)
                                                 if (state.isNotEmpty() && state != name) displayParts.add(state)
                                                 if (country.isNotEmpty() && country != name) displayParts.add(country)
-                                                
+
                                                 val displayName = displayParts.joinToString(", ")
-                                                
+
                                                 adapter.add(displayName)
                                                 suggestionData[displayName] = mapOf(
                                                     "city" to (if (fieldId == "city") name else city),
@@ -398,9 +400,9 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
                                             }
                                         }
                                     }
-                                    
+
                                     adapter.notifyDataSetChanged()
-                                    
+
                                     if (input.hasFocus() && adapter.count > 0) {
                                         input.showDropDown()
                                     }
@@ -417,13 +419,13 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
                         jsonObjectRequest.tag = requestTag
                         requestQueue.add(jsonObjectRequest)
                     }
-                    
+
                     // Shorter delay because Photon is faster
                     handler.postDelayed(searchRunnable!!, 300)
                 }
             }
         })
-        
+
         input.setOnItemClickListener { _, _, position, _ ->
              val selection = adapter.getItem(position)
              val data = suggestionData[selection]
@@ -432,7 +434,7 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
                  selectedCountry = data["country"] ?: ""
              }
         }
-        
+
         input.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) input.dismissDropDown()
         }
@@ -443,7 +445,7 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
             .setPositiveButton("Save") { _, _ ->
                 searchRunnable?.let { handler.removeCallbacks(it) }
                 requestQueue.cancelAll(requestTag)
-                
+
                 if (selectedCity.isNotEmpty() || selectedCountry.isNotEmpty()) {
                     vm.updateLocation(selectedCity, selectedCountry)
                 } else {
@@ -451,11 +453,11 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
                     vm.updateValueRow(fieldId, input.text.toString())
                 }
             }
-            .setNegativeButton("Cancel") { _, _ -> 
+            .setNegativeButton("Cancel") { _, _ ->
                 searchRunnable?.let { handler.removeCallbacks(it) }
                 requestQueue.cancelAll(requestTag)
             }
-            .setOnDismissListener { 
+            .setOnDismissListener {
                  searchRunnable?.let { handler.removeCallbacks(it) }
                  requestQueue.cancelAll(requestTag)
             }
