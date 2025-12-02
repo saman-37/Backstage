@@ -60,46 +60,72 @@ class ChatFragment : Fragment() {
         listeners.forEach { it.remove() }
         listeners.clear()
 
-        db.collection("users").get().addOnSuccessListener { userDocuments ->
-            allUsers.clear()
-            for (doc in userDocuments) {
-                if (doc.id != currentUserId) {
-                    allUsers.add(doc.toObject(User::class.java))
+        // 1. Fetch friend IDs first
+        db.collection("users").document(currentUserId).collection("friends")
+            .get()
+            .addOnSuccessListener { friendSnapshots ->
+                val friendIds = friendSnapshots.documents.map { it.id }
+                
+                if (friendIds.isEmpty()) {
+                    Log.d("ChatFragment", "No friends found for current user.")
+                    allUsers.clear()
+                    userList.clear()
+                    adapter.updateList(userList)
+                    return@addOnSuccessListener
                 }
-            }
 
-            allUsers.forEach { user ->
-                val userIds = listOf(currentUserId, user.uid).sorted()
-                val chatId = "chat_${userIds[0]}_${userIds[1]}"
-
-                val listener = db.collection("chats").document(chatId)
-                    .addSnapshotListener { snapshot, e ->
-                        if (e != null) {
-                            Log.w("ChatFragment", "Listen failed.", e)
-                            return@addSnapshotListener
+                // 2. Then fetch user details for those friends
+                db.collection("users")
+                    .whereIn(FieldPath.documentId(), friendIds)
+                    .get()
+                    .addOnSuccessListener { userDocuments ->
+                        allUsers.clear()
+                        for (doc in userDocuments) {
+                            val user = doc.toObject(User::class.java)
+                            if (user.uid != currentUserId) { // Ensure current user isn't added to their own list
+                                allUsers.add(user)
+                            }
                         }
 
-                        if (snapshot != null && snapshot.exists()) {
-                            val timestamp = snapshot.getLong("lastMessageTimestamp") ?: 0L
-                            val isRead = snapshot.getBoolean("isRead_${currentUserId}") ?: true
-                            val lastMessageSenderId = snapshot.getString("lastMessageSenderId") ?: ""
-                            val lastMessageText = snapshot.getString("lastMessageText") ?: "" // Get the preview text
+                        allUsers.forEach { user ->
+                            val userIds = listOf(currentUserId, user.uid).sorted()
+                            val chatId = "chat_${userIds[0]}_${userIds[1]}"
 
-                            val userToUpdate = allUsers.find { it.uid == user.uid }
-                            userToUpdate?.lastMessageTimestamp = timestamp
-                            userToUpdate?.lastMessagePreview = lastMessageText // Set the preview text
-                            userToUpdate?.unread = !isRead && lastMessageSenderId != currentUserId
+                            val listener = db.collection("chats").document(chatId)
+                                .addSnapshotListener { snapshot, e ->
+                                    if (e != null) {
+                                        Log.w("ChatFragment", "Listen failed.", e)
+                                        return@addSnapshotListener
+                                    }
+
+                                    if (snapshot != null && snapshot.exists()) {
+                                        val timestamp = snapshot.getLong("lastMessageTimestamp") ?: 0L
+                                        val isRead = snapshot.getBoolean("isRead_${currentUserId}") ?: true
+                                        val lastMessageSenderId = snapshot.getString("lastMessageSenderId") ?: ""
+                                        val lastMessageText = snapshot.getString("lastMessageText") ?: "" // Get the preview text
+
+                                        val userToUpdate = allUsers.find { it.uid == user.uid }
+                                        userToUpdate?.lastMessageTimestamp = timestamp
+                                        userToUpdate?.lastMessagePreview = lastMessageText // Set the preview text
+                                        userToUpdate?.unread = !isRead && lastMessageSenderId != currentUserId
+                                    }
+
+                                    // Sort and update the list
+                                    val sortedUsers = allUsers.sortedByDescending { it.lastMessageTimestamp }
+                                    userList.clear()
+                                    userList.addAll(sortedUsers)
+                                    filter(searchEditText.text.toString())
+                                }
+                            listeners.add(listener)
                         }
-
-                        // Sort and update the list
-                        val sortedUsers = allUsers.sortedByDescending { it.lastMessageTimestamp }
-                        userList.clear()
-                        userList.addAll(sortedUsers)
-                        filter(searchEditText.text.toString())
                     }
-                listeners.add(listener)
+                    .addOnFailureListener { e ->
+                        Log.e("ChatFragment", "Error fetching friend details: ", e)
+                    }
             }
-        }
+            .addOnFailureListener { e ->
+                Log.e("ChatFragment", "Error fetching friend IDs: ", e)
+            }
     }
 
 
@@ -113,8 +139,7 @@ class ChatFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {
                 filter(s.toString())
             }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}                                                                                                                                                                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
     }
 
@@ -137,4 +162,3 @@ class ChatFragment : Fragment() {
         listeners.clear()
     }
 }
-
